@@ -343,7 +343,7 @@
         }
 
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:hover td { background: rgba(186, 160, 160, 0.02); }
 
         .td-num { direction: ltr; text-align: left; font-variant-numeric: tabular-nums; }
 
@@ -502,7 +502,7 @@
                         <div class="stat-label">في الانتظار</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card"> 
                     <div class="stat-icon purple">📄</div>
                     <div>
                         <div class="stat-val">{{ $dossiers->getCollection()->where('calcul', '!=', null)->count() }}</div>
@@ -652,6 +652,7 @@
     <!-- 3️⃣ AJOUT MANUEL -->
     <div class="panel">
         <!-- code manuel ici (inchangé) -->
+
          <!-- MANUAL ENTRY -->
                     <div class="panel">
                         <div class="panel-header">

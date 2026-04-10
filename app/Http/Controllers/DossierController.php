@@ -33,14 +33,15 @@ class DossierController extends Controller
     return view('dashboard', compact('dossiers'));
 }
 
+
     /**
      * Upload → OCR (Tesseract ara) → IA → enregistrement dossier.
      */
    public function upload(Request $request)
 {
     // Debug : voir tout ce qui arrive
-    \Log::info('Upload lancé');
-    \Log::info('Fichiers reçus : ' . json_encode($_FILES));
+    Log::info('Upload lancé');
+    Log::info('Fichiers reçus : ' . json_encode($_FILES));
     
     $request->validate([
         'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:81920',
@@ -50,59 +51,61 @@ class DossierController extends Controller
 
     if (!$file || !$file->isValid()) {
         $error = $file ? $file->getErrorMessage() : 'aucun fichier reçu';
-        \Log::error('Fichier invalide : ' . $error);
+        Log::error('Fichier invalide : ' . $error);
         return back()->withErrors(['document' => 'Erreur : ' . $error]);
     }
 
-    \Log::info('Fichier valide : ' . $file->getClientOriginalName() . ' taille: ' . $file->getSize());
+    Log::info('Fichier valide : ' . $file->getClientOriginalName() . ' taille: ' . $file->getSize());
 
     $filename = uniqid('doc_', true) . '.' . $file->getClientOriginalExtension();
     $uploadDir = storage_path('app/uploads');
     $absolute = $uploadDir . DIRECTORY_SEPARATOR . $filename;
 
     $moved = $file->move($uploadDir, $filename);
-    \Log::info('Fichier déplacé : ' . ($moved ? 'oui' : 'non') . ' vers : ' . $absolute);
+    Log::info('Fichier déplacé : ' . ($moved ? 'oui' : 'non') . ' vers : ' . $absolute);
 
     if (!file_exists($absolute)) {
-        \Log::error('Fichier introuvable après move : ' . $absolute);
+        Log::error('Fichier introuvable après move : ' . $absolute);
         return back()->withErrors(['document' => 'Fichier non sauvegardé !']);
     }
 
-    \Log::info('Fichier sauvegardé avec succès !');
+    Log::info('Fichier sauvegardé avec succès !');
 
     try {
         $texteOcr = $this->ocrService->extractText($absolute);
-        \Log::info('OCR OK : ' . substr($texteOcr, 0, 200));
+        Log::info('OCR OK : ' . substr($texteOcr, 0, 200));
 
         $structured = $this->aiExtractionService->extractStructured($texteOcr);
-        \Log::info('IA OK : ' . json_encode($structured));
+        Log::info('IA OK : ' . json_encode($structured));
 
         $nomNormalise = $this->insuranceDetectionService->detectAndNormalize($structured['nom_assurance'] ?? null);
         $montant = (float) ($structured['montant_initial'] ?? 0);
 
-        Dossier::create([
-            'numero_dossier'        => $structured['numero_dossier'] ?: null,
-            'numero_jugement'       => $structured['numero_jugement'] ?: null,
-            'date_jugement'         => null,
-            'nom_victime'           => $structured['nom_victime'] ?: null,
-            'nom_assurance'         => $structured['nom_assurance'] ?: null,
-            'nom_assurance_normalise' => $nomNormalise,
-            'adresse_assurance'     => $structured['adresse_assurance'] ?: null,
-            'montant_initial'       => $montant,
-            'expertise'             => 0,
-            'fichier_pdf'           => 'uploads/' . $filename,
-            'texte_ocr'             => $texteOcr,
-        ]);
+      Dossier::create([
+    'numero_dossier'          => $structured['numero_dossier'] ?: null,
+    'numero_jugement'         => $structured['numero_jugement'] ?: null,
+    'date_jugement'           => null,
+    'nom_victime'             => $structured['nom_victime'] ?: null,
+    'nom_assurance'           => $structured['nom_assurance'] ?: null,
+    'nom_assurance_normalise' => $nomNormalise,
+    'adresse_assurance'       => $structured['adresse_assurance'] ?: null,
+    'montant_initial'         => $montant,
+    'type_cas'                => $structured['type_cas'] ?: null,
+    'expertise'               => 0,
+    'fichier_pdf'             => 'uploads/' . $filename,
+    'texte_ocr'               => $texteOcr,
+]);
 
-        \Log::info('Dossier sauvegardé en base !');
+        Log::info('Dossier sauvegardé en base !');
 
     } catch (\Throwable $e) {
-        \Log::error('Erreur : ' . $e->getMessage());
+        Log::error('Erreur : ' . $e->getMessage());
         return back()->withErrors(['document' => $e->getMessage()]);
     }
 
     return redirect('/')->with('success', 'Document traité avec succès !');
 }
+
     /**
      * Application des 4 cas + الرسم القضائي + total.
      */

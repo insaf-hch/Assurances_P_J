@@ -87,6 +87,7 @@ class OcrService
         }
 
         try {
+            
             return $this->runTesseract($tmpImg);
         } finally {
             if (is_file($tmpImg)) {
