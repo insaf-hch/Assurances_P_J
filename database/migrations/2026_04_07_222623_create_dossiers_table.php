@@ -27,10 +27,12 @@ return new class extends Migration
             // Nom assurance normalisé (ex: الوفاء) après comparaison avec le dossier local
             $table->string('nom_assurance_normalise')->nullable();
 
-            // Montants extraits du PDF
-            $table->decimal('montant_initial', 10, 2)->default(0);   // المبلغ الأصلي
-            $table->decimal('expertise', 10, 2)->default(0);         // الخبرة / تسبيقات الخزينة
+$table->decimal('montant_initial', 10, 2)->nullable();
+$table->decimal('montant_rasemal_ijmali', 10, 2)->nullable();
+$table->decimal('montant_taawidat_youmiya', 10, 2)->nullable();
 
+            // Montants extraits du PDF
+           $table->decimal('expertise', 10, 2)->nullable();        // الخبرة / تسبيقات الخزينة
             // Fichier PDF uploadé
             $table->string('fichier_pdf')->nullable();
 
