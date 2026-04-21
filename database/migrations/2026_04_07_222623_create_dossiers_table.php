@@ -40,6 +40,7 @@ $table->decimal('montant_taawidat_youmiya', 10, 2)->nullable();
             $table->longText('texte_ocr')->nullable();
 
             $table->timestamps();
+            
         });
     }
 

@@ -252,7 +252,7 @@
                             <table id="dossiersTable">
                                 <thead>
                                     <tr>
-                                        <th>تسجيل</th>
+                                        <th></th>
                                         <th>#</th>
                                         <th>رقم الملف</th>
                                         <th>الملف</th>
@@ -333,7 +333,7 @@
                                                 @if($d->calcul)
                                                     <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.istidaa', $d) }}">استدعاء</a>
                                                     <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.amr', $d) }}">أمر</a>
-                                                    <a class="btn btn-ghost btn-sm" href="{{ route('generate-word', $d->id) }}">Word</a>
+                                                    
                                                 @else
                                                     <span style="color:var(--text3)">—</span>
                                                 @endif
