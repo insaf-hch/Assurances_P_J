@@ -150,7 +150,6 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>البيان رقم</th>
                                         <th>النطاق</th>
                                         <th>عدد الملفات</th>
@@ -159,15 +158,19 @@
                                 </thead>
                                 <tbody>
                                     @foreach($bayans as $i => $b)
-                                        <tr>
-                                            <td style="color:var(--text3)">{{ $i + 1 }}</td>
+                                    @php
+                                        $percent = min(100, ($b->dossiers_count / 30) * 100);
+                                    @endphp
+                                    <tr>
+                                            
                                             <td><strong>{{ $b->group_index }}</strong></td>
                                             <td>{{ $b->range_label }}</td>
                                             <td>
                                                 <span style="display:inline-flex;align-items:center;gap:0.4rem;">
                                                     {{ $b->dossiers_count }} / 30
+
                                                     <span style="display:inline-block;width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
-                                                        <span style="display:block;height:100%;width: {{ $percent }} %;background:var(--accent);border-radius:3px;"></span>
+                                                        <span style="display:block;height:100%;width:{{$percent}}%;background:var(--accent);border-radius:3px;"></span>
                                                     </span>
                                                 </span>
                                             </td>

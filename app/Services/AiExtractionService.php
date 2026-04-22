@@ -40,9 +40,11 @@ class AiExtractionService
         $data = $this->validateAndNormalize($data);
 
 // 🔥 CALCUL BACKEND (FIABLE)
-if (!is_null($data['montant_rasemal_ijmali']) && !is_null($data['montant_taawidat_youmiya'])) {
-    $data['montant_initial'] =
-        $data['montant_rasemal_ijmali'] + $data['montant_taawidat_youmiya'];
+$rasemal = (float)($data['montant_rasemal_ijmali'] ?? 0);
+$taawidat = (float)($data['montant_taawidat_youmiya'] ?? 0);
+
+if ($rasemal > 0 || $taawidat > 0) {
+    $data['montant_initial'] = $rasemal + $taawidat;
 }
 
 return $data;
@@ -119,6 +121,7 @@ return $data;
             ."\n".'- شركة التأمين سند'
             ."\n".'- شركة تأمين سنلام'
             ."\n".'- شركة التأمين اطلنطا'
+            ."\n".-'شركة تأمين اليانز المغرب'
             ."\n".'- Si aucune correspondance → retourne le nom trouvé dans le texte tel quel'
             ."\n\n"
 

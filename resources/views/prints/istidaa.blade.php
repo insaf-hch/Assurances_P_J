@@ -98,6 +98,7 @@
 <body>
 <div class="page">
     <div class="content">
+        <div classe="content"> </div>
 
         <!-- EN-TÊTE : logo centré + texte à droite, même niveau vertical -->
         <div class="header-top">
@@ -116,7 +117,7 @@
         </div>
 
         <div class="stars">****</div>
-        <div class="exec-order"><strong>أمــــر تنفيذي:</strong> 189/26</div>
+        <div class="exec-order"><strong>أمــــر تنفيذي:</strong>  <b style="color:green;">189/26</b></div>
         <div class="summon">استدعـــــاء</div>
         <div class="starsSE">****</div>
 
@@ -124,7 +125,7 @@
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; نــحـــن رئـــيس كـــتابة الضبـــط بالمحـــكــمة الابتدائية بالجـــديــــدة.
         </div>
         <div class="para-18">
-            بناء على القرار الصادر بتاريخ: <b>27/07/2023</b> &nbsp;&nbsp;الملف عدد: <b>318/22</b> &nbsp;&nbsp;قضية ح ش.
+            بناء على القرار الصادر بتاريخ: <b style="color:red;">27/07/2023</b> &nbsp;&nbsp;الملف عدد: <b style="color:red;">318/22</b> &nbsp;&nbsp;قضية ح ش.
         </div>
         <div class="para-18">
             نطلب من المسمى : شركة التامين الوفاء في شخص ممثلها القانوني
@@ -133,7 +134,7 @@
             الكائن مقرها الاجتماعي ب: 01 شارع عبد المومن الدار البيضاء
         </div>
         <div class="para-18">
-            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b>781.00</b> درهما
+            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b style="color:red;">781.00</b> درهما
         </div>
 
         <div class="para-16">
@@ -141,7 +142,7 @@
         </div>
 
         <div class="signature">
-            <p>حرر بالجديدة بتاريخ: 05-03-2026</p>
+            <p>حرر بالجديدة بتاريخ: <b style="color:green;">05-03-2026</b> </p>
             <p>الإمضــاء:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p style="margin-top: 8px;">عن رئيس كتابة الضبط&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p class="bold-text">رشيدة بليلة&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -159,9 +160,10 @@
                 <div>محكمة الاستئناف بالجديدة</div>
                 <div>المحكمة الابتدائية بالجديدة</div>
                 <div><strong>وحدة التبليغ و التحصيل</strong></div>
-                <div class="stars-mini">****</div>
-                <div class="exec-num"><strong>أمر تنفيذي رقم : 25/423</strong></div>
+                <div class="stars-mini">&nbsp;&nbsp;&nbsp;&nbsp;****</div>
+                <div class="exec-num">أمر تنفيذي رقم : <b style="color:green;">189/26</b> </div>
                 <div class="agent-sign">اسم وتوقيع عون التبليغ</div>
+                <p>........................</p>
             </div>
 
             <div class="center-text">

@@ -210,13 +210,13 @@
                     <form method="post" action="{{ route('upload') }}" enctype="multipart/form-data">
                         @csrf
                         <div style="padding: 1.25rem;">
-                            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                                <div class="upload-icon">📤</div>
-                                <div class="upload-title">اسحب الملف هنا أو انقر للاختيار</div>
-                                <div class="upload-sub" id="fileName">PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت</div>
-                                <input type="file" name="document" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" required
-                                    onchange="document.getElementById('fileName').textContent = this.files[0]?.name || 'لم يتم اختيار ملف'">
-                            </div>
+                         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon" id="uploadIcon">📤</div>
+                        <div class="upload-title" id="uploadTitle">اسحب الملف هنا أو انقر للاختيار</div>
+                        <div class="upload-sub" id="fileName">PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت</div>
+                        <input type="file" name="document" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" required
+                            onchange="handleFileSelect(this)">
+                    </div>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem; display:flex; justify-content:flex-end;">
                             <button type="submit" class="btn btn-primary">تحليل الملف</button>
@@ -487,7 +487,7 @@
                 <div class="form-group"><label>شركة التأمين</label><input type="text" name="nom_assurance"></div>
                 <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance"></div>
                 <div class="form-group"><label>المبلغ الأصلي</label><input type="number" step="0.01" min="0" name="montant_initial"></div>
-                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise" value="0"></div>
+                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise"></div>
                 <div class="form-group"><label>رأسمال إجمالي</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" value="0"></div>
                 <div class="form-group"><label>تعويضات يومية</label><input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" value="0"></div>
                 <div class="form-group"><label>مصاريف الجنازة</label><input type="number" step="0.01" min="0" name="masarif_janaza" value="0"></div>
@@ -584,8 +584,8 @@ function fmt(n) { return (Math.round(parseFloat(n) * 100) / 100).toFixed(2); }
 function fillBreakdownTable(b) {
     const tb = document.getElementById('breakdownBody');
     const rows = [
-        ['المبلغ الأصلي (للعرض)', b.montant_affiche_original],
-        ['الأساس للرسم القضائي', b.montant_pour_rasm],
+        ['المبلغ الأصلي ', b.montant_affiche_original],
+        //['الأساس للرسم القضائي', b.montant_pour_rasm],
         ['الرسم القضائي', b.rasm_qadai],
         ['حقوق المرافعة', b.rusum_murafaa],
         ['رسم البحث', b.rasm_bahth],
@@ -611,6 +611,37 @@ function openBreakdownServer(id) {
         .then(function (b) { fillBreakdownTable(b); document.getElementById('breakdownModal').classList.add('open'); });
 }
 
+function handleFileSelect(input) {
+    const file = input.files[0];
+    const zone = document.getElementById('uploadZone');
+    const icon = document.getElementById('uploadIcon');
+    const title = document.getElementById('uploadTitle');
+    const sub = document.getElementById('fileName');
+
+    if (file) {
+        // Affichage du feedback
+        zone.style.borderColor = 'var(--success)';
+        zone.style.background = 'rgba(34,197,94,0.08)';
+        icon.textContent = '✅';
+        title.textContent = file.name;
+        title.style.color = 'var(--success)';
+        // Taille du fichier
+        const size = file.size < 1024 * 1024
+            ? (file.size / 1024).toFixed(1) + ' KB'
+            : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        sub.textContent = '📎 ' + size + ' — جاهز للتحليل';
+        sub.style.color = 'var(--success)';
+    } else {
+        // Reset
+        zone.style.borderColor = '';
+        zone.style.background = '';
+        icon.textContent = '📤';
+        title.textContent = 'اسحب الملف هنا أو انقر للاختيار';
+        title.style.color = '';
+        sub.textContent = 'PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت';
+        sub.style.color = '';
+    }
+}
 function clearCalcBenefList() { var box = document.getElementById('calc_benef_list'); if (box) box.innerHTML = ''; }
 
 function addCalcBenefRow(val) {
