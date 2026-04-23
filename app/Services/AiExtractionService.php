@@ -21,114 +21,154 @@ class AiExtractionService
         'type_cas',
         'type_malaf',
     ];
+protected function cleanOcrText(string $text): string
+{
+    // Supprime caractères bidi invisibles (cause principale du 23/8/1)
+    $text = preg_replace('/[\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $text);
 
-    public function extractStructured(string $ocrText): array
-    {
-        $prompt = $this->buildPrompt($ocrText);
+    // Convertit chiffres arabes → latins
+    $arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    $latin  = ['0','1','2','3','4','5','6','7','8','9'];
+    $text = str_replace($arabic, $latin, $text);
 
-        $data = $this->tryGemini($prompt);
-        if ($data === null) {
-            $data = $this->tryGroq($prompt);
-        }
+    // Supprime parasites OCR
+    $text = preg_replace('/[*#|]/u', '', $text);
 
-        if ($data === null) {
-            throw new RuntimeException(
-                'Aucune extraction IA possible : définissez GEMINI_API_KEY ou GROQ_API_KEY dans .env.'
-            );
-        }
+    // Normalise espaces
+    $text = preg_replace('/[ \t]+/', ' ', $text);
+    $text = preg_replace('/\n{3,}/', "\n\n", $text);
 
-        $data = $this->validateAndNormalize($data);
-
-// 🔥 CALCUL BACKEND (FIABLE)
-$rasemal = (float)($data['montant_rasemal_ijmali'] ?? 0);
-$taawidat = (float)($data['montant_taawidat_youmiya'] ?? 0);
-
-if ($rasemal > 0 || $taawidat > 0) {
-    $data['montant_initial'] = $rasemal + $taawidat;
+    return trim($text);
 }
+    public function extractStructured(string $ocrText): array
+{
+    $ocrText = $this->cleanOcrText($ocrText);
+    $prompt = $this->buildPrompt($ocrText);
 
-return $data;
+    $data = $this->tryGemini($prompt);
+    if ($data === null) {
+        $data = $this->tryGroq($prompt);
     }
 
-    protected function buildPrompt(string $ocrText): string
-    {
-        Log::debug('OCR envoyé longueur', [
-            'longueur'      => strlen($ocrText),
-            'extrait_500'   => mb_substr($ocrText, 0, 500, 'UTF-8'),
-            'contient_درهم' => str_contains($ocrText, 'درهم') ? 'OUI' : 'NON',
-            'contient_قدره' => str_contains($ocrText, 'قدره') ? 'OUI' : 'NON',
-        ]);
-            Log::debug('OCR COMPLET', ['text' => $ocrText]);
-        return 'Tu es un expert en dossiers judiciaires marocains (accidents du travail, assurances). '
-            .'À partir du texte OCR ci-dessous, extrais UNIQUEMENT un objet JSON valide avec exactement ces clés : '
-            .'numero_dossier, numero_jugement, date_jugement, nom_assurance, adresse_assurance, nom_victime (chaînes, "" si inconnu), '
-            .'montant_initial (nombre décimal ou null), '
-            .'montant_rasemal_ijmali (nombre décimal ou null), '
-            .'montant_taawidat_youmiya (nombre décimal ou null), '
-            .'type_cas (string ou null), '
-            .'type_malaf (string : description courte du dossier, ex: "إيراد عمري" ou "" si inconnu). '
-            ."\n\n"
-
-            // ======================================================
-            // RÈGLES type_cas — AJOUTE TES NOUVELLES RÈGLES ICI
-            // ======================================================
-            .'=== RÈGLES POUR type_cas ==='
-            ."\n".'- Si tu trouves "إيرادا عمريا سنويا محولا لراسمال" ET "تعويضات يومية" → type_cas = "masdar_total_taawidat"'
-            ."\n".'- Si tu trouves "إيرادا عمريا سنويا محولا لراسمال" SANS "تعويضات يومية" → type_cas = "irad_omri_ras_mal"'
-            ."\n".'- Si tu trouves "إيراد عمري" SANS "محولا لراسمال" → type_cas = "irad_omri"'
-            ."\n".'- Si tu trouves "حادث شغل" أو "حادثة شغل" → type_cas = "irad_omri"'
-            ."\n".'- Si tu trouves "غرامة إجبارية" → type_cas = "gharama_ijbariya"'
-            ."\n".'- Sinon → type_cas = null'
-            // AJOUTE ICI d'autres règles type_cas si besoin
-            ."\n\n"
-
-            // ======================================================
-            // RÈGLES montant — AJOUTE TES NOUVELLES RÈGLES ICI
-            // ======================================================
-            // ======================================================
-// EXTRACTION SIMPLE DES MONTANTS (NOUVEAU)
-// ======================================================
-.'=== EXTRACTION DES MONTANTS ==='
-."\n".'- Trouve tous les nombres qui ressemblent à des montants (ex: 39336.13, 4,121.66, 23000)'
-."\n".'- Supprime les parenthèses (ex: (39336.13) → 39336.13)'
-."\n".'- Nettoie les espaces et symboles'
-."\n\n"
-.'Cherche les montants proches de :'
-."\n".'   • راسمال / رأسمال'
-."\n".'   • تعويضات يومية'
-."\n".'   • مبلغ / قدره / قدرها / درهم'
-."\n\n"
-.'Règles :'
-."\n".'- montant_rasemal_ijmali = montant proche de "راسمال"'
-."\n".'- montant_taawidat_youmiya = montant proche de "تعويضات يومية"'
-."\n".'- montant_initial = le PLUS GRAND montant trouvé si doute'
-."\n".'- Si aucun montant → null'
-."\n\n"
-
-            // ======================================================
-            // RÈGLES nom_assurance
-            // ======================================================
-            .'=== RÈGLES POUR nom_assurance ==='
-            ."\n".'Cherche parmi ces compagnies et retourne le nom EXACT tel qu\'il apparaît :'
-            ."\n".'- شركة التأمين الوفاء'
-            ."\n".'- المكتب المركزي'
-            ."\n".'- التعاضدية الفلاحية أو المركزية'
-            ."\n".'- شركة التأمين أكسا'
-            ."\n".'- شركة التأمين الملكية'
-            ."\n".'- شركة التأمين النقل'
-            ."\n".'- شركة تأمين ارباب النقل'
-            ."\n".'- شركة تأمين زوريخ'
-            ."\n".'- شركة التأمين سند'
-            ."\n".'- شركة تأمين سنلام'
-            ."\n".'- شركة التأمين اطلنطا'
-            ."\n".-'شركة تأمين اليانز المغرب'
-            ."\n".'- Si aucune correspondance → retourne le nom trouvé dans le texte tel quel'
-            ."\n\n"
-
-            .'Réponds uniquement par le JSON brut, sans markdown ni texte autour.'
-            ."\n\nTexte OCR :\n---\n".$ocrText."\n---\n";
+    if ($data === null) {
+        throw new RuntimeException(
+            'Aucune extraction IA possible : définissez GEMINI_API_KEY ou GROQ_API_KEY dans .env.'
+        );
     }
 
+    $data = $this->validateAndNormalize($data);
+
+    // ✅ VÉRIFICATION PHP — annule les montants si mots-clés absents dans l'OCR
+    $keywordsMontant = ['راسمال', 'رأسمال', 'تعويضات', 'درهم', 'قدره', 'قدرها', 'مبلغ'];
+    $ocrContientMontant = false;
+    foreach ($keywordsMontant as $kw) {
+        if (str_contains($ocrText, $kw)) {
+            $ocrContientMontant = true;
+            break;
+        }
+    }
+
+    if (!$ocrContientMontant) {
+        // L'OCR ne contient aucun mot-clé de montant → on force null
+        $data['montant_initial'] = null;
+        $data['montant_rasemal_ijmali'] = null;
+        $data['montant_taawidat_youmiya'] = null;
+        Log::info('Montants forcés à null — aucun mot-clé montant dans OCR');
+    } else {
+        // Calcul normal
+        $rasemal = (float)($data['montant_rasemal_ijmali'] ?? 0);
+        $taawidat = (float)($data['montant_taawidat_youmiya'] ?? 0);
+        if ($rasemal > 0 || $taawidat > 0) {
+            $data['montant_initial'] = $rasemal + $taawidat;
+        }
+    }
+
+    return $data;
+}
+// Ajoute cette méthode dans la classe
+protected function normalizeArabicNumerals(string $text): string
+{
+    $arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    $latin  = ['0','1','2','3','4','5','6','7','8','9'];
+    return str_replace($arabic, $latin, $text);
+}
+   protected function buildPrompt(string $ocrText): string
+{
+    Log::debug('OCR envoyé longueur', [
+        'longueur'      => strlen($ocrText),
+        'extrait_500'   => mb_substr($ocrText, 0, 500, 'UTF-8'),
+        'contient_درهم' => str_contains($ocrText, 'درهم') ? 'OUI' : 'NON',
+        'contient_قدره' => str_contains($ocrText, 'قدره') ? 'OUI' : 'NON',
+    ]);
+    Log::debug('OCR COMPLET', ['text' => $ocrText]);
+
+    return 'Tu es un expert en dossiers judiciaires marocains (accidents du travail, assurances). '
+        .'À partir du texte OCR ci-dessous, extrais UNIQUEMENT un objet JSON valide avec ces clés : '
+        .'numero_dossier, numero_jugement, date_jugement, nom_assurance, adresse_assurance, '
+        .'nom_victime, montant_initial, montant_rasemal_ijmali, montant_taawidat_youmiya, type_cas, type_malaf.'
+        ."\n\n"
+
+        .'=== RÈGLES GÉNÉRALES ==='
+        ."\n".'- Ne jamais inventer une valeur — si tu n\'es pas sûr → null ou ""'
+        ."\n".'- Copie les chiffres EXACTEMENT, sans ajouter ni supprimer de zéros'
+        ."\n\n"
+
+        .'=== numero_dossier ==='
+        ."\n".'- Cherche UNIQUEMENT la ligne contenant "ملف رقم" ou "ملف عدد"'
+        ."\n".'- Le numéro a toujours 3 parties ex: 376/1502/2023'
+        ."\n".'- Ne jamais confondre avec une date ou un autre numéro dans le texte'
+        ."\n".'- Si non trouvé clairement → retourne ""'
+        ."\n\n"
+
+        .'=== numero_jugement ==='
+        ."\n".'- Cherche après "حكم عدد" ou "حكم رقم"'
+        ."\n".'- Si non trouvé → retourne ""'
+        ."\n\n"
+
+        .'=== nom_assurance ==='
+        ."\n".'- Cherche après "المدعى عليها" ou "شركة التأمين" — souvent entre guillemets'
+        ."\n".'- Ne jamais retourner "شركة التأمين" seul sans le nom complet'
+."\n".'- Si tu ne peux pas identifier le nom exact → retourne ""'
+        ."\n".'- Si tu vois "الوفاء"        → "شركة التأمين الوفاء"'
+        ."\n".'- Si tu vois "أكسا"           → "شركة التأمين أكسا"'
+        ."\n".'- Si tu vois "سند"            → "شركة التأمين سند"'
+        ."\n".'- Si tu vois "سنلام"          → "شركة تأمين سنلام"'
+        ."\n".'- Si tu vois "زوريخ"          → "شركة تأمين زوريخ"'
+        ."\n".'- Si tu vois "اطلنطا"         → "شركة التأمين اطلنطا"'
+        ."\n".'- Si tu vois "الملكية"        → "شركة التأمين الملكية"'
+        ."\n".'- Si tu vois "اليانز"         → "شركة تأمين اليانز المغرب"'
+        ."\n".'- Si tu vois "المكتب المركزي" → "المكتب المركزي"'
+        ."\n".'- Si tu vois "تعاضدية"        → "التعاضدية الفلاحية أو المركزية"'
+        ."\n\n"
+
+        .'=== MONTANTS ==='
+."\n".'- IMPORTANT : Si les mots "راسمال" ou "تعويضات يومية" ou "درهم" ou "قدره" ne sont PAS dans le texte OCR → retourne null pour TOUS les montants'
+."\n".'- Ne jamais deviner ou utiliser des montants non présents dans le texte'
+."\n".'- montant_rasemal_ijmali  = montant IMMÉDIATEMENT après "لراسمال" ou "راسمال"'
+."\n".'- montant_taawidat_youmiya = montant IMMÉDIATEMENT après "تعويضات يومية"'
+."\n".'- montant_initial = somme des deux si présents, sinon montant principal'
+."\n\n"
+
+        .'=== type_cas ==='
+        ."\n".'- "إيرادا عمريا سنويا محولا لراسمال" + "تعويضات يومية" → "masdar_total_taawidat"'
+        ."\n".'- "إيرادا عمريا سنويا محولا لراسمال" seul → "irad_omri_ras_mal"'
+        ."\n".'- "إيراد عمري" seul → "irad_omri"'
+        ."\n".'- "حادث شغل" ou "حادثة شغل" → "irad_omri"'
+        ."\n".'- "غرامة إجبارية" → "gharama_ijbariya"'
+        ."\n".'- Sinon → null'
+        ."\n\n"
+
+        .'=== MONTANTS ==='
+        ."\n".'- montant_rasemal_ijmali  = montant après "لراسمال" ou "راسمال" ou "رأسمال"'
+        ."\n".'- montant_taawidat_youmiya = montant après "تعويضات يومية"'
+        ."\n".'- montant_initial = somme des deux si présents, sinon le montant principal du jugement'
+        ."\n".'- Supprime parenthèses : (21647.54) → 21647.54'
+        ."\n".'- Si aucun montant clairement lisible → null'
+        ."\n\n"
+
+        .'Réponds UNIQUEMENT par le JSON brut, sans markdown.'
+        ."\n\nTexte OCR :\n---\n".$ocrText."\n---\n";
+}
     protected function tryGemini(string $prompt): ?array
     {
         $key = config('services.gemini.key');
@@ -201,7 +241,9 @@ return $data;
                 continue;
             }
 
-            $out[$key] = is_scalar($data[$key]) ? trim((string) $data[$key]) : '';
+            $out[$key] = is_scalar($data[$key]) 
+    ? trim($this->normalizeArabicNumerals((string) $data[$key])) 
+    : '';
         }
 
         return $out;

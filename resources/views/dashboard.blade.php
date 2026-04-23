@@ -315,13 +315,13 @@
                                                     <span style="color:var(--text3)">—</span>
                                                 @endif
                                             </td>
-                                            <td>{{ number_format((float) $d->montant_initial, 2, '.', ' ') }}</td>
+                                            <td dir="ltr" style="text-align:right;">{{ number_format((float) $d->montant_initial, 2, '.', ',') }}</td>
                                             <td>
                                                 @if($d->calcul)
                                                     <button type="button" class="btn btn-ghost btn-sm" 
                                                             data-id="{{ $d->id }}"
                                                             onclick="openBreakdownServer(this.dataset.id)">
-                                                        {{ number_format((float) $d->calcul->total, 2, '.', ' ') }}
+                                                        <span dir="ltr">{{ number_format((float) $d->calcul->total, 2, '.', ',') }}</span>
                                                     </button>
                                                 @elseif($d->type_cas)
                                                     <button type="button" class="btn btn-ghost btn-sm" data-payload="{{ $payloadAttr }}" onclick="openBreakdownPreview(this)">معاينة</button>

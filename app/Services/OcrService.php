@@ -61,36 +61,48 @@ class OcrService
         return null;
     }
 
-    protected function pdfViaGhostscript(string $pdfPath, string $gs): string
-    {
-        $tmpDir = storage_path('app/temp');
-        if (! is_dir($tmpDir)) {
-            mkdir($tmpDir, 0755, true);
-        }
+   protected function pdfViaGhostscript(string $pdfPath, string $gs): string
+{
+    $tmpDir = storage_path('app/temp');
+    if (! is_dir($tmpDir)) {
+        mkdir($tmpDir, 0755, true);
+    }
 
-        $tmpImg = $tmpDir . DIRECTORY_SEPARATOR . uniqid('gs_', true) . '.png';
+    $prefix = $tmpDir . DIRECTORY_SEPARATOR . uniqid('gs_', true);
+    $pattern = $prefix . '_%03d.png';
 
-        $cmd = sprintf(
-            '"%s" -dNOPAUSE -dBATCH -sDEVICE=png16m -r200 -dFirstPage=1 -dLastPage=10 -sOutputFile="%s" "%s" 2>&1',
-            $gs,
-            $tmpImg,
-            $pdfPath
-        );
+    $cmd = sprintf(
+        '"%s" -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -dFirstPage=1 -dLastPage=5 -sOutputFile="%s" "%s" 2>&1',
+        $gs,
+        $pattern,
+        $pdfPath
+    );
 
-        exec($cmd, $output, $code);
+    exec($cmd, $output, $code);
 
-        if ($code !== 0 || ! is_file($tmpImg)) {
-            throw new RuntimeException('Ghostscript n\'a pas pu convertir le PDF : ' . implode(' ', $output));
-        }
+    // Collecte toutes les pages générées
+    $pages = glob($prefix . '_*.png');
 
+    if ($code !== 0 || empty($pages)) {
+        throw new RuntimeException('Ghostscript n\'a pas pu convertir le PDF : ' . implode(' ', $output));
+    }
+
+    sort($pages);
+
+    // OCR sur chaque page et concatène le texte
+    $fullText = '';
+    foreach ($pages as $page) {
         try {
-            return $this->runTesseract($tmpImg);
+            $fullText .= "\n" . $this->runTesseract($page);
         } finally {
-            if (is_file($tmpImg)) {
-                @unlink($tmpImg);
+            if (is_file($page)) {
+                @unlink($page);
             }
         }
     }
+
+    return trim($fullText);
+}
 
     protected function tryPdfParserText(string $pdfPath): string
     {
@@ -103,20 +115,22 @@ class OcrService
         }
     }
 
-    protected function runTesseract(string $imagePath): string
-    {
-        $ocr = new TesseractOCR($imagePath);
-        $ocr->lang('ara+fra')
-            ->psm(4)
-            ->oem(1)
-            ->dpi(300)
-            ->config('preserve_interword_spaces', 1);
+   protected function runTesseract(string $imagePath): string
 
-        $binary = config('assurances.tesseract_binary');
-        if (is_string($binary) && $binary !== '') {
-            $ocr->executable($binary);
-        }
+{
+    $ocr = new TesseractOCR($imagePath);
+    $ocr->lang('ara+fra')
+        ->psm(6)  // ✅ 4→6 : bloc de texte uniforme, meilleur pour docs arabes
+        ->oem(1)
+        ->dpi(300)
+        ->config('preserve_interword_spaces', '1');
 
-        return trim($ocr->run());
+    $binary = config('assurances.tesseract_binary');
+    if (is_string($binary) && $binary !== '') {
+        $ocr->executable($binary);
     }
+
+    return trim($ocr->run());
+}
+
 }
