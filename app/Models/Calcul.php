@@ -6,19 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Calcul extends Model
 {
-    //
     protected $fillable = [
         'dossier_id',
         'montant_apres_cas',
-        'rasm_qadai',
-        'rusum_murafaa',
-        'rasm_bahth',
+        'rasm_qadai',        // frais de justice
+        'rusum_murafaa',     // droits plaidoirie (10 DH)
+        'rasm_bahth',        // frais recherche (20 DH)
         'expertise',
         'masarif_janaza',
         'total',
         'total_en_lettres_ar',
         'numero_amr_tanfidhi',
         'date_generation',
+        // ⭐ NOUVEAUX CHAMPS POUR LA GESTION DYNAMIQUE
+        'bareme_id',         // quel barème a été utilisé
+        'type_cas_applique', // irad_omri, taawidate, etc.
+        'details_calcul',    // stocker tout le détail en JSON
     ];
 
     protected function casts(): array
@@ -32,6 +35,7 @@ class Calcul extends Model
             'masarif_janaza' => 'decimal:2',
             'total' => 'decimal:2',
             'date_generation' => 'date',
+            'details_calcul' => 'array',
         ];
     }
 

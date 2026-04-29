@@ -27,3 +27,4 @@ Route::get('/generate-word/{id}', [DossierController::class, 'generateWord'])->n
 Route::get('/bayans/{bayan}', [BayanController::class, 'show'])->name('bayans.show');
 
 Route::get('/wathaiq', [WathaiqController::class, 'index'])->name('wathaiq.index');
+

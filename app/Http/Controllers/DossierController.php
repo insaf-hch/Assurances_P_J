@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\Calcul;
 
 class DossierController extends Controller
 {
@@ -84,7 +85,16 @@ class DossierController extends Controller
                     $dateJugement = null;
                 }
             }
+if (!empty($structured['numero_dossier'])) {
 
+    $exists = Dossier::where('numero_dossier', $structured['numero_dossier'])->exists();
+
+    if ($exists) {
+        return back()->withErrors([
+            'document' => 'رقم الملف موجود مسبقاً.'
+        ]);
+    }
+}
             Dossier::create([
                 'numero_dossier' => $structured['numero_dossier'] ?: null,
                 'numero_jugement' => $structured['numero_jugement'] ?: null,
@@ -110,7 +120,29 @@ class DossierController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'تم تحليل المستند بنجاح.');
     }
+public function imprimer($id)
+{
+    $dossier = Dossier::findOrFail($id);
 
+    $calcul = Calcul::where('dossier_id', $id)->firstOrFail();
+
+    if (!$calcul->numero_amr_tanfidhi) {
+
+        $annee = now()->format('y');
+
+        $count = Calcul::whereNotNull('numero_amr_tanfidhi')
+                    ->whereYear('created_at', now()->year)
+                    ->count();
+
+        $numero = ($count + 1) . '/' . $annee;
+
+        $calcul->numero_amr_tanfidhi = $numero;
+        $calcul->date_generation = now();
+        $calcul->save();
+    }
+
+    return view('wataiq.montaja', compact('dossier', 'calcul'));
+}
     public function calculate(Request $request, Dossier $dossier)
     {
         $validated = $request->validate([
@@ -282,4 +314,21 @@ class DossierController extends Controller
 
         return response()->download($zip, 'dossier_'.$dossier->id.'_documents.zip')->deleteFileAfterSend(true);
     }
+    public function testExtraction($id)
+{
+    $dossier = Dossier::findOrFail($id);
+    $chemin = storage_path('app/public/' . $dossier->fichier);
+    
+    // OCR
+    $ocrService = new OcrService();
+    $ocrText = $ocrService->extractText($chemin);
+    
+    // Extraction
+    $aiService = new AiExtractionService();
+    $aiService->debugExtraction($ocrText); // <-- AJOUTEZ CECI
+    
+    $resultat = $aiService->extractStructured($ocrText);
+    
+    return response()->json($resultat);
+}
 }

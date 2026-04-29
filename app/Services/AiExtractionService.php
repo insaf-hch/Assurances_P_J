@@ -40,7 +40,7 @@ protected function cleanOcrText(string $text): string
 
     return trim($text);
 }
-    public function extractStructured(string $ocrText): array
+   public function extractStructured(string $ocrText): array
 {
     $ocrText = $this->cleanOcrText($ocrText);
     $prompt = $this->buildPrompt($ocrText);
@@ -58,32 +58,68 @@ protected function cleanOcrText(string $text): string
 
     $data = $this->validateAndNormalize($data);
 
-    // ✅ VÉRIFICATION PHP — annule les montants si mots-clés absents dans l'OCR
-    $keywordsMontant = ['راسمال', 'رأسمال', 'تعويضات', 'درهم', 'قدره', 'قدرها', 'مبلغ'];
-    $ocrContientMontant = false;
-    foreach ($keywordsMontant as $kw) {
-        if (str_contains($ocrText, $kw)) {
-            $ocrContientMontant = true;
-            break;
-        }
-    }
-
-    if (!$ocrContientMontant) {
-        // L'OCR ne contient aucun mot-clé de montant → on force null
+    // ✅ CORRECTION : Détection plus intelligente des montants
+    $montantsDansOCR = $this->detectMontantsInOCR($ocrText);
+    
+    if (!$montantsDansOCR['has_any_montant']) {
+        Log::info('Aucun montant détecté dans OCR', ['debug' => $montantsDansOCR]);
         $data['montant_initial'] = null;
         $data['montant_rasemal_ijmali'] = null;
         $data['montant_taawidat_youmiya'] = null;
-        Log::info('Montants forcés à null — aucun mot-clé montant dans OCR');
     } else {
         // Calcul normal
         $rasemal = (float)($data['montant_rasemal_ijmali'] ?? 0);
         $taawidat = (float)($data['montant_taawidat_youmiya'] ?? 0);
+        
         if ($rasemal > 0 || $taawidat > 0) {
             $data['montant_initial'] = $rasemal + $taawidat;
+        } elseif ($montantsDansOCR['found_numbers'] > 0) {
+            // Si l'IA n'a pas extrait les montants mais que l'OCR contient des nombres
+            Log::warning('OCR contient des nombres mais IA na pas extrait de montants', [
+                'numbers_found' => $montantsDansOCR['sample_numbers']
+            ]);
         }
     }
 
     return $data;
+}
+
+/**
+ * Détection intelligente des montants dans l'OCR
+ */
+protected function detectMontantsInOCR(string $text): array
+{
+    // Mots-clés de montant (plus complets)
+    $montantKeywords = [
+        'راسمال', 'رأسمال', 'تعويضات', 'درهم', 'قدره', 'قدرها', 'مبلغ',
+        'المبلغ', 'إجمالي', 'جملة', 'جملته', 'مجموع', 'الإجمالي'
+    ];
+    
+    $hasKeyword = false;
+    foreach ($montantKeywords as $kw) {
+        if (str_contains($text, $kw)) {
+            $hasKeyword = true;
+            break;
+        }
+    }
+    
+    // Cherche des nombres qui ressemblent à des montants (avec décimales ou séparateurs)
+    $numberPattern = '/\b[\d,.]{4,}\b/'; // Nombres avec au moins 4 chiffres
+    preg_match_all($numberPattern, $text, $matches);
+    $potentialNumbers = array_unique($matches[0] ?? []);
+    
+    // Filtre les vrais montants (probablement > 1000)
+    $realNumbers = array_filter($potentialNumbers, function($num) {
+        $clean = str_replace(['.', ','], '', $num);
+        return is_numeric($clean) && (int)$clean > 1000;
+    });
+    
+    return [
+        'has_any_montant' => $hasKeyword || count($realNumbers) > 0,
+        'has_keyword' => $hasKeyword,
+        'found_numbers' => count($realNumbers),
+        'sample_numbers' => array_slice($realNumbers, 0, 3)
+    ];
 }
 // Ajoute cette méthode dans la classe
 protected function normalizeArabicNumerals(string $text): string
@@ -168,6 +204,25 @@ protected function normalizeArabicNumerals(string $text): string
 
         .'Réponds UNIQUEMENT par le JSON brut, sans markdown.'
         ."\n\nTexte OCR :\n---\n".$ocrText."\n---\n";
+}
+// Ajoutez cette méthode temporaire pour voir ce que l'IA répond vraiment
+public function debugExtraction(string $ocrText): void
+{
+    $ocrText = $this->cleanOcrText($ocrText);
+    $prompt = $this->buildPrompt($ocrText);
+    
+    Log::info('=== DÉBUT PROMPT ===');
+    Log::info(substr($prompt, 0, 1500));
+    Log::info('=== FIN PROMPT ===');
+    
+    // Test Gemini
+    $result = $this->tryGemini($prompt);
+    Log::info('RÉPONSE GEMINI:', ['result' => $result]);
+    
+    if (!$result) {
+        $result = $this->tryGroq($prompt);
+        Log::info('RÉPONSE GROQ:', ['result' => $result]);
+    }
 }
     protected function tryGemini(string $prompt): ?array
     {

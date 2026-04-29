@@ -34,6 +34,7 @@ class ManualController extends Controller
             'beneficiaires' => 'nullable|array',
             'beneficiaires.*.montant' => 'nullable|numeric|min:0',
             'beneficiaires_json' => 'nullable|string',
+            
         ]);
 
         $beneficiaires = [];

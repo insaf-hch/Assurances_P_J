@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أمر تنفيذي واستدعاء - وثيقة رسمية</title>
+    <title>استدعاء </title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -117,7 +117,7 @@
         </div>
 
         <div class="stars">****</div>
-        <div class="exec-order"><strong>أمــــر تنفيذي:</strong>  <b style="color:green;">189/26</b></div>
+        <div class="exec-order"><strong>أمــــر تنفيذي:</strong>  <b style="color:green;">{{ $calcul->numero_amr_tanfidhi }}</b></div>
         <div class="summon">استدعـــــاء</div>
         <div class="starsSE">****</div>
 
@@ -125,16 +125,16 @@
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; نــحـــن رئـــيس كـــتابة الضبـــط بالمحـــكــمة الابتدائية بالجـــديــــدة.
         </div>
         <div class="para-18">
-            بناء على القرار الصادر بتاريخ: <b style="color:red;">27/07/2023</b> &nbsp;&nbsp;الملف عدد: <b style="color:red;">318/22</b> &nbsp;&nbsp;قضية ح ش.
+            بناء على القرار الصادر بتاريخ: <b style="color:red;">{{ \Carbon\Carbon::parse($dossier->date_jugement)->format('d/m/Y') }}</b> &nbsp;&nbsp;الملف عدد: <b style="color:red;">{{ $dossier->numero_dossier }}</b> &nbsp;&nbsp;قضية ح ش.
         </div>
         <div class="para-18">
-            نطلب من المسمى : شركة التامين الوفاء في شخص ممثلها القانوني
+            نطلب من المسمى : {{ $dossier->nom_assurance }} في شخص ممثلها القانوني
         </div>
         <div class="para-18">
-            الكائن مقرها الاجتماعي ب: 01 شارع عبد المومن الدار البيضاء
+            الكائن مقرها الاجتماعي ب: 01{{ $dossier->adresse_assurance }}
         </div>
         <div class="para-18">
-            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b style="color:red;">781.00</b> درهما
+            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b style="color:red;">{{ number_format($calcul->total,2) }}</b> درهما
         </div>
 
         <div class="para-16">
@@ -142,7 +142,7 @@
         </div>
 
         <div class="signature">
-            <p>حرر بالجديدة بتاريخ: <b style="color:green;">05-03-2026</b> </p>
+            <p>حرر بالجديدة بتاريخ: <b style="color:green;">{{ \Carbon\Carbon::parse($dossier->date_export)->format('d-m-Y') }}</b> </p>
             <p>الإمضــاء:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p style="margin-top: 8px;">عن رئيس كتابة الضبط&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p class="bold-text">رشيدة بليلة&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -161,7 +161,7 @@
                 <div>المحكمة الابتدائية بالجديدة</div>
                 <div><strong>وحدة التبليغ و التحصيل</strong></div>
                 <div class="stars-mini">&nbsp;&nbsp;&nbsp;&nbsp;****</div>
-                <div class="exec-num">أمر تنفيذي رقم : <b style="color:green;">189/26</b> </div>
+                <div class="exec-num">أمر تنفيذي رقم : <b style="color:green;">{{ $calcul->numero_amr_tanfidhi }}</b> </div>
                 <div class="agent-sign">اسم وتوقيع عون التبليغ</div>
                 <p>........................</p>
             </div>
