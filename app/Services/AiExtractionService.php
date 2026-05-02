@@ -40,7 +40,7 @@ protected function cleanOcrText(string $text): string
 
     return trim($text);
 }
-   public function extractStructured(string $ocrText): array
+  public function extractStructured(string $ocrText): array
 {
     $ocrText = $this->cleanOcrText($ocrText);
     $prompt = $this->buildPrompt($ocrText);
@@ -51,34 +51,36 @@ protected function cleanOcrText(string $text): string
     }
 
     if ($data === null) {
-        throw new RuntimeException(
-            'Aucune extraction IA possible : définissez GEMINI_API_KEY ou GROQ_API_KEY dans .env.'
-        );
+        throw new RuntimeException('Aucune extraction IA possible.');
     }
 
     $data = $this->validateAndNormalize($data);
 
-    // ✅ CORRECTION : Détection plus intelligente des montants
     $montantsDansOCR = $this->detectMontantsInOCR($ocrText);
-    
+
     if (!$montantsDansOCR['has_any_montant']) {
-        Log::info('Aucun montant détecté dans OCR', ['debug' => $montantsDansOCR]);
-        $data['montant_initial'] = null;
-        $data['montant_rasemal_ijmali'] = null;
+        $data['montant_initial']          = null;
+        $data['montant_rasemal_ijmali']   = null;
         $data['montant_taawidat_youmiya'] = null;
+        return $data;
+    }
+
+    $rasemal  = (float) ($data['montant_rasemal_ijmali']   ?? 0);
+    $taawidat = (float) ($data['montant_taawidat_youmiya'] ?? 0);
+    $initial  = (float) ($data['montant_initial']          ?? 0);
+
+    if ($rasemal > 0 || $taawidat > 0) {
+        // ✅ Cas mixte : somme des deux
+        $data['montant_initial'] = round($rasemal + $taawidat, 2);
+    } elseif ($initial > 0) {
+        // ✅ Cas simple : l'IA a retourné montant_initial directement
+        $data['montant_initial'] = $initial;
     } else {
-        // Calcul normal
-        $rasemal = (float)($data['montant_rasemal_ijmali'] ?? 0);
-        $taawidat = (float)($data['montant_taawidat_youmiya'] ?? 0);
-        
-        if ($rasemal > 0 || $taawidat > 0) {
-            $data['montant_initial'] = $rasemal + $taawidat;
-        } elseif ($montantsDansOCR['found_numbers'] > 0) {
-            // Si l'IA n'a pas extrait les montants mais que l'OCR contient des nombres
-            Log::warning('OCR contient des nombres mais IA na pas extrait de montants', [
-                'numbers_found' => $montantsDansOCR['sample_numbers']
-            ]);
-        }
+        // ❌ Rien trouvé
+        Log::warning('OCR contient des nombres mais IA na pas extrait de montants', [
+            'sample' => $montantsDansOCR['sample_numbers']
+        ]);
+        $data['montant_initial'] = null;
     }
 
     return $data;

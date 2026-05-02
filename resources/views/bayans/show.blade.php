@@ -122,7 +122,7 @@
                 <span class="nav-icon">📄</span> الوثائق المُنتجة
             </a>
         </nav>
-        <div class="sidebar-footer">نظام معالجة حوادث الشغل — v1.0</div>
+        <div class="sidebar-footer">نظام معالجة حوادث الشغل </div>
     </aside>
 
     <!-- MAIN -->
@@ -132,7 +132,7 @@
         <div class="topbar">
             <div>
                 <div class="topbar-title">البيان رقم {{ $bayan->group_index }}  سنة {{ $bayan->year }}</div>
-                <div class="topbar-sub">نطاق الأرقام: {{ $bayan->range_label }} — {{ $bayan->dossiers->count() }} ملف</div>
+                <div class="topbar-sub">نطاق الأرقام: {{ $bayan->range_label }}  ({{ $bayan->dossiers->count() }} ملف) </div>
             </div>
             <div class="topbar-actions">
                 <a href="{{ route('wathaiq.index') }}" class="btn btn-ghost btn-sm">← العودة للقائمة</a>
@@ -275,7 +275,6 @@
             ['تاريخ القرار',           d.date_jugement],
             ['اسم المصاب',             d.nom_victime],
             ['شركة التأمين',           d.nom_assurance],
-            ['التأمين (معياري)',        d.nom_assurance_normalise],
             ['العنوان',                d.adresse_assurance],
             ['نوع الملف',              d.type_malaf],
             ['المبلغ الأصلي',          d.montant_initial  != null ? d.montant_initial  + ' درهم' : null],
@@ -287,6 +286,7 @@
             ['المبلغ المؤدى (محسوب)',  d.total != null ? d.total + ' درهم' : null],
             ['أمر تنفيذي',             d.numero_amr],
         ];
+        
         var html = '';
         fields.forEach(function(f) {
             var val = (f[1] === null || f[1] === undefined || f[1] === '') ? '—' : f[1];

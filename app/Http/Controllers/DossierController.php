@@ -144,114 +144,149 @@ public function imprimer($id)
     return view('wataiq.montaja', compact('dossier', 'calcul'));
 }
     public function calculate(Request $request, Dossier $dossier)
-    {
-        $validated = $request->validate([
-            'type_cas' => 'required|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,autre',
-            'expertise' => 'nullable|numeric|min:0',
-            'montant_initial' => 'nullable|numeric|min:0',
-            'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
-            'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
-            'masarif_janaza' => 'nullable|numeric|min:0',
-            'type_malaf' => 'nullable|string|max:255',
-            'beneficiaires' => 'nullable|array',
-            'beneficiaires.*.montant' => 'nullable|numeric|min:0',
-            'beneficiaires_json' => 'nullable|string',
+{
+    $validated = $request->validate([
+        'type_cas' => 'required|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,autre',
+        'expertise' => 'nullable|numeric|min:0',
+        'montant_initial' => 'nullable|numeric|min:0',
+        'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
+        'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
+        'masarif_janaza' => 'nullable|numeric|min:0',
+        'type_malaf' => 'nullable|string|max:255',
+        'beneficiaires' => 'nullable|array',
+        'beneficiaires.*.montant' => 'nullable|numeric|min:0',
+        'beneficiaires_json' => 'nullable|string',
+    ]);
+
+    // Traitement des bénéficiaires
+    $beneficiaires = [];
+    if ($request->has('beneficiaires_json')) {
+        $decoded = json_decode($request->input('beneficiaires_json') ?: '[]', true);
+        if (is_array($decoded)) {
+            foreach ($decoded as $row) {
+                if (is_array($row)) {
+                    $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
+                }
+            }
+        }
+        $beneficiairesJson = $beneficiaires;
+    } elseif ($request->has('beneficiaires') && is_array($request->input('beneficiaires'))) {
+        foreach ($request->input('beneficiaires', []) as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
+        }
+        $beneficiairesJson = $beneficiaires;
+    } else {
+        $beneficiairesJson = $dossier->beneficiaires_json ?? [];
+    }
+
+    DB::transaction(function () use ($dossier, $validated, $beneficiairesJson) {
+        // ✅ CORRECTION : S'assurer que toutes les valeurs sont des nombres
+        $montantInitial = isset($validated['montant_initial']) 
+            ? (float) $validated['montant_initial'] 
+            : ((float) ($dossier->montant_initial ?? 0));
+            
+        $montantRasemal = isset($validated['montant_rasemal_ijmali']) 
+            ? (float) $validated['montant_rasemal_ijmali'] 
+            : ((float) ($dossier->montant_rasemal_ijmali ?? 0));
+            
+        $montantTaawidat = isset($validated['montant_taawidat_youmiya']) 
+            ? (float) $validated['montant_taawidat_youmiya'] 
+            : ((float) ($dossier->montant_taawidat_youmiya ?? 0));
+            
+        $masarifJanaza = isset($validated['masarif_janaza']) 
+            ? (float) $validated['masarif_janaza'] 
+            : ((float) ($dossier->masarif_janaza ?? 0));
+            
+        $expertise = isset($validated['expertise']) 
+            ? (float) $validated['expertise'] 
+            : ((float) ($dossier->expertise ?? 0));
+
+        $dossier->update([
+            'type_cas' => $validated['type_cas'],
+            'expertise' => $expertise,
+            'montant_initial' => $montantInitial,
+            'montant_rasemal_ijmali' => $montantRasemal,
+            'montant_taawidat_youmiya' => $montantTaawidat,
+            'masarif_janaza' => $masarifJanaza,
+            'type_malaf' => $validated['type_malaf'] ?? $dossier->type_malaf,
+            'beneficiaires_json' => $beneficiairesJson,
         ]);
 
+        // ✅ Forcer le recalcul avec fresh() pour avoir les dernières valeurs
+        $dossierFraiche = $dossier->fresh();
+        $this->calculService->createOrUpdateCalcul($dossierFraiche);
+    });
+
+    return redirect()->route('dashboard')->with('success', 'تم حفظ الحساب.');
+}
+   public function update(Request $request, Dossier $dossier)
+{
+    $validated = $request->validate([
+        'numero_dossier' => 'nullable|string|max:255',
+        'numero_jugement' => 'nullable|string|max:255',
+        'date_jugement' => 'nullable|date',
+        'nom_victime' => 'nullable|string|max:255',
+        'nom_assurance' => 'nullable|string|max:255',
+        'adresse_assurance' => 'nullable|string|max:500',
+        'montant_initial' => 'nullable|numeric|min:0',
+        'expertise' => 'nullable|numeric|min:0',
+        'type_cas' => 'nullable|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,autre',
+        'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
+        'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
+        'masarif_janaza' => 'nullable|numeric|min:0',
+        'type_malaf' => 'nullable|string|max:255',
+        'beneficiaires' => 'nullable|array',
+        'beneficiaires.*.montant' => 'nullable|numeric|min:0',
+        'beneficiaires_json' => 'nullable|string',
+    ]);
+
+    // Traitement des bénéficiaires
+    $beneficiaires = $dossier->beneficiaires_json ?? [];
+    if ($request->has('beneficiaires_json')) {
+        $decoded = json_decode($request->input('beneficiaires_json') ?: '[]', true);
         $beneficiaires = [];
-        if ($request->has('beneficiaires_json')) {
-            $decoded = json_decode($request->input('beneficiaires_json') ?: '[]', true);
-            if (is_array($decoded)) {
-                foreach ($decoded as $row) {
-                    if (is_array($row)) {
-                        $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
-                    }
+        if (is_array($decoded)) {
+            foreach ($decoded as $row) {
+                if (is_array($row)) {
+                    $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
                 }
             }
-            $beneficiairesJson = $beneficiaires;
-        } elseif ($request->has('beneficiaires') && is_array($request->input('beneficiaires'))) {
-            foreach ($request->input('beneficiaires', []) as $row) {
-                if (! is_array($row)) {
-                    continue;
-                }
-                $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
+        }
+    } elseif ($request->has('beneficiaires')) {
+        $beneficiaires = [];
+        foreach ($request->input('beneficiaires', []) as $row) {
+            if (! is_array($row)) {
+                continue;
             }
-            $beneficiairesJson = $beneficiaires;
+            $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
+        }
+    }
+
+    // ✅ S'assurer que toutes les valeurs numériques sont bien des floats
+    $updateData = [];
+    foreach ($validated as $key => $value) {
+        if (in_array($key, ['expertise', 'montant_initial', 'montant_rasemal_ijmali', 'montant_taawidat_youmiya', 'masarif_janaza'])) {
+            $updateData[$key] = (float) ($value ?? 0);
         } else {
-            $beneficiairesJson = $dossier->beneficiaires_json;
+            $updateData[$key] = $value;
         }
-
-        DB::transaction(function () use ($dossier, $validated, $beneficiairesJson) {
-            $dossier->update([
-                'type_cas' => $validated['type_cas'],
-                'expertise' => (float) ($validated['expertise'] ?? 0),
-                'montant_initial' => (float) ($validated['montant_initial'] ?? $dossier->montant_initial),
-                'montant_rasemal_ijmali' => (float) ($validated['montant_rasemal_ijmali'] ?? $dossier->montant_rasemal_ijmali),
-                'montant_taawidat_youmiya' => (float) ($validated['montant_taawidat_youmiya'] ?? $dossier->montant_taawidat_youmiya),
-                'masarif_janaza' => (float) ($validated['masarif_janaza'] ?? $dossier->masarif_janaza),
-                'type_malaf' => $validated['type_malaf'] ?? $dossier->type_malaf,
-                'beneficiaires_json' => $beneficiairesJson,
-            ]);
-
-            $this->calculService->createOrUpdateCalcul($dossier->fresh());
-        });
-
-        return redirect()->route('dashboard')->with('success', 'تم حفظ الحساب.');
     }
 
-    public function update(Request $request, Dossier $dossier)
-    {
-        $validated = $request->validate([
-            'numero_dossier' => 'nullable|string|max:255',
-            'numero_jugement' => 'nullable|string|max:255',
-            'date_jugement' => 'nullable|date',
-            'nom_victime' => 'nullable|string|max:255',
-            'nom_assurance' => 'nullable|string|max:255',
-            'adresse_assurance' => 'nullable|string|max:500',
-            'montant_initial' => 'nullable|numeric|min:0',
-            'expertise' => 'nullable|numeric|min:0',
-            'type_cas' => 'nullable|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,autre',
-            'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
-            'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
-            'masarif_janaza' => 'nullable|numeric|min:0',
-            'type_malaf' => 'nullable|string|max:255',
-            'beneficiaires' => 'nullable|array',
-            'beneficiaires.*.montant' => 'nullable|numeric|min:0',
-            'beneficiaires_json' => 'nullable|string',
-        ]);
+    $dossier->update(array_merge(
+        $updateData,
+        ['beneficiaires_json' => $beneficiaires]
+    ));
 
-        $beneficiaires = $dossier->beneficiaires_json ?? [];
-        if ($request->has('beneficiaires_json')) {
-            $decoded = json_decode($request->input('beneficiaires_json') ?: '[]', true);
-            $beneficiaires = [];
-            if (is_array($decoded)) {
-                foreach ($decoded as $row) {
-                    if (is_array($row)) {
-                        $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
-                    }
-                }
-            }
-        } elseif ($request->has('beneficiaires')) {
-            $beneficiaires = [];
-            foreach ($request->input('beneficiaires', []) as $row) {
-                if (! is_array($row)) {
-                    continue;
-                }
-                $beneficiaires[] = ['montant' => (float) ($row['montant'] ?? 0)];
-            }
-        }
-
-        $dossier->update(array_merge(
-            collect($validated)->except(['beneficiaires', 'beneficiaires_json'])->toArray(),
-            ['beneficiaires_json' => $beneficiaires]
-        ));
-
-        if ($dossier->type_cas) {
-            $this->calculService->createOrUpdateCalcul($dossier->fresh());
-        }
-
-        return redirect()->route('dashboard')->with('success', 'تم تعديل الملف.');
+    if ($dossier->type_cas) {
+        $this->calculService->createOrUpdateCalcul($dossier->fresh());
     }
+
+    return redirect()->route('dashboard')->with('success', 'تم تعديل الملف.');
+}
+
 
     public function destroy(Dossier $dossier)
     {

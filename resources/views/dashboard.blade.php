@@ -209,8 +209,10 @@
                     </div>
                     <form method="post" action="{{ route('upload') }}" enctype="multipart/form-data">
                         @csrf
-                        <div style="padding: 1.25rem;">
-                         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                        <div style="padding: 1.25rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                         <div class="upload-zone" id="uploadZone" 
+                            style="flex:1; min-width:250px;"
+                            onclick="document.getElementById('fileInput').click()">
                         <div class="upload-icon" id="uploadIcon">📤</div>
                         <div class="upload-title" id="uploadTitle">اسحب الملف هنا أو انقر للاختيار</div>
                         <div class="upload-sub" id="fileName">PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت</div>
@@ -484,7 +486,28 @@
                 <div class="form-group"><label>رقم الملف</label><input type="text" name="numero_dossier"></div>
                 <div class="form-group"><label>رقم الحكم</label><input type="text" name="numero_jugement"></div>
                 <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement"></div>
-                <div class="form-group"><label>شركة التأمين</label><input type="text" name="nom_assurance"></div>
+                <div class="form-group">
+    <label>شركة التأمين</label>
+    <select name="nom_assurance">
+        <option value="">— اختر شركة التأمين —</option>
+        <option value="شركة التامين التعاضدية الفلاحية">شركة التامين التعاضدية الفلاحية</option>
+        <option value="شركة التأمين أكسا">شركة التأمين أكسا</option>
+        <option value="شركة التأمين الملكية">شركة التأمين الملكية</option>
+        <option value="شركة التأمين النقل">شركة التأمين النقل</option>
+        <option value="شركة التأمين الوفاء">شركة التأمين الوفاء</option>
+        <option value="شركة التأمين اليانز">شركة التأمين اليانز</option>
+        <option value="شركة التأمين سند">شركة التأمين سند</option>
+        <option value="شركة التأمين سنلام">شركة التأمين سنلام</option>
+        <option value="شركة التأمين أطلنطا">شركة التأمين أطلنطا</option>
+        <option value="شركة التامين التعاضدية المركزية">شركة التامين التعاضدية المركزية</option>
+        <option value="شركة التأمين أرباب النقل">شركة التأمين أرباب النقل</option>
+        <option value="autre">أخرى</option>
+    </select>
+</div>
+<div class="form-group full" id="wrap_autre_assurance" style="display:none">
+    <label>اسم الشركة (أخرى)</label>
+    <input type="text" name="nom_assurance_autre" id="nom_assurance_autre" placeholder="أدخل اسم شركة التأمين">
+</div>
                 <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance"></div>
                 <div class="form-group"><label>المبلغ الأصلي</label><input type="number" step="0.01" min="0" name="montant_initial"></div>
                 <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise"></div>
@@ -567,6 +590,7 @@
 
 
 <script src="{{ asset('js/dossier-calc.js') }}"></script>
+
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 const BASE = "{{ url('/') }}";
@@ -584,7 +608,7 @@ function fmt(n) { return (Math.round(parseFloat(n) * 100) / 100).toFixed(2); }
 function fillBreakdownTable(b) {
     const tb = document.getElementById('breakdownBody');
     const rows = [
-        ['المبلغ الأصلي ', b.montant_affiche_original],
+        ['المبلغ الأصلي', b.montant_original],
         //['الأساس للرسم القضائي', b.montant_pour_rasm],
         ['الرسم القضائي', b.rasm_qadai],
         ['حقوق المرافعة', b.rusum_murafaa],
@@ -780,6 +804,10 @@ function saveDossier(id) {
         } else if (data.message) { alert(data.message); }
     });
 }
+document.querySelector('select[name="nom_assurance"]').addEventListener('change', function() {
+    var wrap = document.getElementById('wrap_autre_assurance');
+    wrap.style.display = this.value === 'autre' ? '' : 'none';
+});
 </script>
 </body>
 </html>
