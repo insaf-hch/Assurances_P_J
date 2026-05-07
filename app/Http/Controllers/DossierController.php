@@ -18,6 +18,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Models\Calcul;
 
+
 class DossierController extends Controller
 {
     public function __construct(
@@ -29,17 +30,18 @@ class DossierController extends Controller
         protected ProducedDocumentService $producedDocumentService,
     ) {}
 
-    public function index(): View
-    {
-        $dossiers = Dossier::with(['calcul', 'bayan'])->latest()->paginate(15);
-        $bayans = Bayan::query()
-            ->where('year', (int) now()->year)
-            ->withCount('dossiers')
-            ->orderBy('group_index')
-            ->get();
+ public function index(): View
+{
+    $dossiers = Dossier::with(['calcul', 'bayan'])->latest()->paginate(15);
+    $bayans = Bayan::query()
+        ->where('year', (int) now()->year)
+        ->withCount('dossiers')
+        ->orderBy('group_index')
+        ->get();
 
-        return view('dashboard', compact('dossiers', 'bayans'));
-    }
+        $calculService = $this->calculService; 
+    return view('dashboard', compact('dossiers', 'bayans', 'calculService'));
+}
 
     public function upload(Request $request)
     {

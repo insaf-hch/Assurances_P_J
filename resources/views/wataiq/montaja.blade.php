@@ -170,13 +170,20 @@
                                                     {{ $b->dossiers_count }} / 30
 
                                                     <span style="display:inline-block;width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
-                                                        <span style="display:block;height:100%;width:{{$percent}}%;background:var(--accent);border-radius:3px;"></span>
+                                                        <span style="display:block;height:100%;width: {{ $percent . '%' }};background:var(--accent);border-radius:3px;"></span>
                                                     </span>
                                                 </span>
                                             </td>
                                             <td>
-                                                <a class="btn btn-primary btn-sm" href="{{ route('bayans.show', $b) }}">عرض البيان</a>
-                                            </td>
+    <div style="display:inline-flex; gap:0.4rem; align-items:center;">
+        <a class="btn btn-primary btn-sm" href="{{ route('bayans.show', $b) }}">عرض البيان</a>
+        <a class="btn btn-sm" 
+           href="{{ route('bayans.donn', $b) }}"
+           style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">
+           📄  قائمة بيانات
+        </a>
+    </div>
+</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

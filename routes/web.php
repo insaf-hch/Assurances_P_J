@@ -28,3 +28,8 @@ Route::get('/bayans/{bayan}', [BayanController::class, 'show'])->name('bayans.sh
 
 Route::get('/wathaiq', [WathaiqController::class, 'index'])->name('wathaiq.index');
 
+
+
+Route::get('/bayans/{bayan}/donn', function(\App\Models\Bayan $bayan) {
+    return view('bayans.DonnBaayan', compact('bayan'));
+})->name('bayans.donn');

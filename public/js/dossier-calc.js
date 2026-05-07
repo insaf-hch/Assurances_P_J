@@ -32,7 +32,6 @@
                 return round2(mi);
 
             case 'masdar_total_taawidat':
-                // ✅ Somme rasemal + taawidat, fallback sur montant_initial
                 var somme = round2(mri + mty);
                 return somme > 0 ? somme : round2(mi);
 
@@ -40,12 +39,15 @@
                 return round2(mi);
 
             case 'wafaya_irad_omri':
-                return sommeBeneficiaires(ben, true);   // ×10
+                return sommeBeneficiaires(ben, true);
 
             case 'wafaya_ras_mal':
-                return sommeBeneficiaires(ben, false);  // pas de ×10
+                return sommeBeneficiaires(ben, false);
 
             default:
+                if (mri > 0 || mty > 0) {
+                    return round2(mri + mty);
+                }
                 return round2(mi);
         }
     }
@@ -53,19 +55,19 @@
     function rasmQadai(montant) {
         var m = parseFloat(montant) || 0;
         if (m <= 0)     return 0;
-        if (m <= 5000)  return round2(m * 0.04);   // 4%
-        if (m <= 20000) return round2(m * 0.025);  // 2.5%
-        return round2(m * 0.01 + 300);             // 1% + 300
+        if (m <= 5000)  return round2(m * 0.04);
+        if (m <= 20000) return round2(m * 0.025);
+        return round2(m * 0.01 + 300);
     }
 
     function buildBreakdown(state) {
-        var type       = state.type_cas || 'autre';
-        var montantPour = montantPourRasm(state);
-        var rasm        = rasmQadai(montantPour);
-        var expertise   = parseFloat(state.expertise) || 0;
+        var type         = state.type_cas || 'autre';
+        var montantPour  = montantPourRasm(state);
+        var rasm         = rasmQadai(montantPour);
+        var expertise    = parseFloat(state.expertise) || 0;
         var rusumMurafaa = 10;
-        var rasmBahth   = type === 'gharama_ijbariya' ? 0 : 20;
-        var janaza      = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
+        var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
+        var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
                             ? parseFloat(state.masarif_janaza) || 0
                             : 0;
 

@@ -33,6 +33,69 @@ class CalculService
         return 'غير معروف';
     }
 
+    /**
+     * حساب المبلغ الأصلي الذي سيتم عرضه في الجدول (الواجهة)
+     * هذا يطبق منطق:
+     * - إذا وفاة إيراد عمري: مجموع المستفيدين × 10
+     * - إذا وفاة رأس مال: مجموع المستفيدين
+     * - إذا存在 مصاريف علاج أو تعويضات: المبلغ الأصلي + مصاريف العلاج + التعويضات
+     * -否則: المبلغ الأصلي فقط
+     */
+    public function getMontantOriginalCalcule(Dossier $dossier): float
+    {
+        $typeCas = $dossier->type_cas;
+        $montantInitial = (float) ($dossier->montant_initial ?? 0);
+        $rasemal = (float) ($dossier->montant_rasemal_ijmali ?? 0);
+        $taawidat = (float) ($dossier->montant_taawidat_youmiya ?? 0);
+        $beneficiaires = $dossier->beneficiaires_json;
+
+        // 1. حالات الوفاة
+        if ($typeCas === 'wafaya_irad_omri') {
+            // كل مبلغ مستفيد يُضرب في 10
+            return $this->sommeBeneficiaires($beneficiaires, true);
+        }
+        
+        if ($typeCas === 'wafaya_ras_mal') {
+            // مجموع مبالغ المستفيدين فقط
+            return $this->sommeBeneficiaires($beneficiaires, false);
+        }
+
+        // 2. إذا كانت هناك مصاريف علاج أو تعويضات يومية
+        if ($rasemal > 0 || $taawidat > 0) {
+            return round($montantInitial + $rasemal + $taawidat, 2);
+        }
+
+        // 3. الحالة الافتراضية
+        return $montantInitial;
+    }
+
+    /**
+     * دالة مساعدة لحساب مجموع مبالغ المستفيدين من JSON
+     */
+    private function sommeBeneficiaires($beneficiairesJson, bool $foisDix = false): float
+    {
+        if (empty($beneficiairesJson)) {
+            return 0;
+        }
+        
+        // إذا كانت البيانات نصية JSON، نحولها إلى array
+        $beneficiaires = is_array($beneficiairesJson) 
+            ? $beneficiairesJson 
+            : json_decode($beneficiairesJson, true);
+        
+        if (!is_array($beneficiaires) || count($beneficiaires) === 0) {
+            return 0;
+        }
+        
+        $sum = 0;
+        foreach ($beneficiaires as $beneficiaire) {
+            $montant = (float) ($beneficiaire['montant'] ?? 0);
+            $sum += $foisDix ? $montant * 10 : $montant;
+        }
+        
+        return round($sum, 2);
+    }
+
     public function createOrUpdateCalcul(Dossier $dossier): Calcul
     {
         if (is_null($dossier->montant_initial)) {
@@ -44,7 +107,7 @@ class CalculService
         $montantBase   = $this->getMontantDeBase($dossier);
         $rasmQadai     = $this->calculerFraisJustice($montantBase);
         $rusumMurafaa  = 10.00;
-        $rasmBahth     = $dossier->type_cas === 'gharama_ijbariya' ? 0.00 : 20.00; // aligné JS
+        $rasmBahth     = $dossier->type_cas === 'gharama_ijbariya' ? 0.00 : 20.00;
         $expertise     = (float) ($dossier->expertise ?? 0);
         $masarifJanaza = (float) ($dossier->masarif_janaza ?? 0);
 
@@ -83,39 +146,51 @@ class CalculService
         );
     }
 
-  private function getMontantDeBase(Dossier $dossier): float
-{
-    $typeCas        = $dossier->type_cas;
-    $montantInitial = (float) ($dossier->montant_initial ?? 0);
-    $rasemal        = (float) ($dossier->montant_rasemal_ijmali ?? 0);
-    $taawidat       = (float) ($dossier->montant_taawidat_youmiya ?? 0);
+    /**
+     * حساب المبلغ الأساسي الذي يستخدم لحساب الرسم القضائي
+     */
+    private function getMontantDeBase(Dossier $dossier): float
+    {
+        $typeCas        = $dossier->type_cas;
+        $montantInitial = (float) ($dossier->montant_initial ?? 0);
+        $rasemal        = (float) ($dossier->montant_rasemal_ijmali ?? 0);
+        $taawidat       = (float) ($dossier->montant_taawidat_youmiya ?? 0);
+        $beneficiaires  = $dossier->beneficiaires_json;
 
-    switch ($typeCas) {
+        switch ($typeCas) {
 
-        case 'irad_omri':
-        case 'wafaya_irad_omri':
-            // Irad annuel → ×10
-            return $montantInitial * 10;
+            case 'irad_omri':
+                return $montantInitial * 10;
 
-        case 'irad_omri_ras_mal':
-        case 'wafaya_ras_mal':
-            // Déjà en rasemal final → pas de ×10
-            return $montantInitial;
+            case 'irad_omri_ras_mal':
+                return $montantInitial;
 
-        case 'masdar_total_taawidat':
-            // ✅ Somme rasemal + taawidat → barème appliqué sur la somme
-            if ($rasemal > 0 || $taawidat > 0) {
-                return round($rasemal + $taawidat, 2);
-            }
-            // Fallback si l'IA a mis directement dans montant_initial
-            return $montantInitial;
+            case 'wafaya_irad_omri':
+                // مجموع المستفيدين × 10
+                return $this->sommeBeneficiaires($beneficiaires, true);
 
-        case 'gharama_ijbariya':
-        case 'autre':
-        default:
-            return $montantInitial;
+            case 'wafaya_ras_mal':
+                // مجموع المستفيدين فقط
+                return $this->sommeBeneficiaires($beneficiaires, false);
+
+            case 'masdar_total_taawidat':
+                if ($rasemal > 0 || $taawidat > 0) {
+                    return round($rasemal + $taawidat, 2);
+                }
+                return $montantInitial;
+
+            case 'gharama_ijbariya':
+                return $montantInitial;
+
+            case 'autre':
+            default:
+                if ($rasemal > 0 || $taawidat > 0) {
+                    return round($rasemal + $taawidat, 2);
+                }
+                return $montantInitial;
+        }
     }
-}
+
     private function getBaremeDescription(float $montant): string
     {
         if ($montant <= 5000)  return "4% (0 - 5,000 DH)";
@@ -181,4 +256,4 @@ class CalculService
             'formule'          => $detailsCalcul['formule'] ?? 'N/A',
         ];
     }
-}
+}   

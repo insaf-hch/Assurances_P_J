@@ -131,7 +131,7 @@
             نطلب من المسمى : {{ $dossier->nom_assurance }} في شخص ممثلها القانوني
         </div>
         <div class="para-18">
-            الكائن مقرها الاجتماعي ب: 01{{ $dossier->adresse_assurance }}
+            الكائن مقرها الاجتماعي ب: {{ $dossier->adresse_assurance }}
         </div>
         <div class="para-18">
             أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b style="color:red;">{{ number_format($calcul->total,2) }}</b> درهما

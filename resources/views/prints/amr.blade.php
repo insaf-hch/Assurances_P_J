@@ -17,12 +17,14 @@
             border: 1px solid #999;
         }
 
+
         /* Outer two-column layout: left col = header info, right col = main content */
         .outer-table {
             width: 100%;
             border-collapse: collapse;
             border-right: 2px solid black;
         }
+        
         .col-left {
             width: 240px;
             vertical-align: top;

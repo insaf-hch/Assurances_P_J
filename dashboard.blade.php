@@ -267,10 +267,6 @@
                                 </thead>
                                 <tbody>
                                     @foreach($dossiers as $d)
-                                    @php
-                                        // حساب المبلغ الأصلي المعروض باستخدام الـ Service
-                                            $montantOriginalCalcule = $calculService->getMontantOriginalCalcule($d);
-                                        @endphp
                                         @php
                                             $payload = [
                                                 'type_cas' => $d->type_cas,
@@ -347,9 +343,9 @@
                                             <td>
                                                 <div class="actions-row">
                                                     <button type="button" class="btn btn-primary btn-sm" 
-                                                            data-payload="{{ $payloadAttr }}" 
-                                                            data-id="{{ $d->id }}"
-                                                            onclick="openCalcModal(this.dataset.id, this)">تسجيل</button>
+        data-payload="{{ $payloadAttr }}" 
+        data-id="{{ $d->id }}"
+        onclick="openCalcModal(this.dataset.id, this)">تسجيل</button>
                                                     <button type="button" class="btn btn-warning btn-sm" onclick="openEditModalFromButton(this)"
                                                             data-id="{{ $d->id }}"
                                                             data-numero_dossier="{{ e($d->numero_dossier) }}"
@@ -478,7 +474,6 @@
 </div>
 
 <!-- إضافة يدوية -->
-<!-- إضافة يدوية -->
 <div class="modal-overlay" id="manualModal">
     <div class="modal" style="max-width:540px;">
         <div class="modal-header">
@@ -492,81 +487,46 @@
                 <div class="form-group"><label>رقم الحكم</label><input type="text" name="numero_jugement"></div>
                 <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement"></div>
                 <div class="form-group">
-                    <label>شركة التأمين</label>
-                    <select name="nom_assurance" id="manual_nom_assurance">
-                        <option value="">— اختر شركة التأمين —</option>
-                        <option value="شركة التامين التعاضدية الفلاحية">شركة التامين التعاضدية الفلاحية</option>
-                        <option value="شركة التأمين أكسا">شركة التأمين أكسا</option>
-                        <option value="شركة التأمين الملكية">شركة التأمين الملكية</option>
-                        <option value="شركة التأمين النقل">شركة التأمين النقل</option>
-                        <option value="شركة التأمين الوفاء">شركة التأمين الوفاء</option>
-                        <option value="شركة التأمين اليانز">شركة التأمين اليانز</option>
-                        <option value="شركة التأمين سند">شركة التأمين سند</option>
-                        <option value="شركة التأمين سنلام">شركة التأمين سنلام</option>
-                        <option value="شركة التأمين أطلنطا">شركة التأمين أطلنطا</option>
-                        <option value="شركة التامين التعاضدية المركزية">شركة التامين التعاضدية المركزية</option>
-                        <option value="شركة التأمين أرباب النقل">شركة التأمين أرباب النقل</option>
-                        <option value="autre">أخرى</option>
-                    </select>
-                </div>
-                <div class="form-group full" id="wrap_autre_assurance_manual" style="display:none">
-                    <label>اسم الشركة (أخرى)</label>
-                    <input type="text" name="nom_assurance_autre" placeholder="أدخل اسم شركة التأمين">
-                </div>
+    <label>شركة التأمين</label>
+    <select name="nom_assurance">
+        <option value="">— اختر شركة التأمين —</option>
+        <option value="شركة التامين التعاضدية الفلاحية">شركة التامين التعاضدية الفلاحية</option>
+        <option value="شركة التأمين أكسا">شركة التأمين أكسا</option>
+        <option value="شركة التأمين الملكية">شركة التأمين الملكية</option>
+        <option value="شركة التأمين النقل">شركة التأمين النقل</option>
+        <option value="شركة التأمين الوفاء">شركة التأمين الوفاء</option>
+        <option value="شركة التأمين اليانز">شركة التأمين اليانز</option>
+        <option value="شركة التأمين سند">شركة التأمين سند</option>
+        <option value="شركة التأمين سنلام">شركة التأمين سنلام</option>
+        <option value="شركة التأمين أطلنطا">شركة التأمين أطلنطا</option>
+        <option value="شركة التامين التعاضدية المركزية">شركة التامين التعاضدية المركزية</option>
+        <option value="شركة التأمين أرباب النقل">شركة التأمين أرباب النقل</option>
+        <option value="autre">أخرى</option>
+    </select>
+</div>
+<div class="form-group full" id="wrap_autre_assurance" style="display:none">
+    <label>اسم الشركة (أخرى)</label>
+    <input type="text" name="nom_assurance_autre" id="nom_assurance_autre" placeholder="أدخل اسم شركة التأمين">
+</div>
                 <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance"></div>
-
-                <!-- نوع الحالة — يظهر مبكراً لأنه يتحكم في باقي الحقول -->
+                <div class="form-group"><label>المبلغ الأصلي</label><input type="number" step="0.01" min="0" name="montant_initial"></div>
+                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise"></div>
+                <div class="form-group"><label>رأسمال إجمالي</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" value="0"></div>
+                <div class="form-group"><label>تعويضات يومية</label><input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" value="0"></div>
+                <div class="form-group"><label>مصاريف الجنازة</label><input type="number" step="0.01" min="0" name="masarif_janaza" value="0"></div>
                 <div class="form-group full">
                     <label>نوع الحالة</label>
-                    <select name="type_cas" id="manual_type_cas" onchange="onManualTypeCasChange()">
+                    <select name="type_cas">
                         <option value="">—</option>
                         <option value="irad_omri">إيراد عمري</option>
                         <option value="irad_omri_ras_mal">رأس مال</option>
                         <option value="masdar_total_taawidat">رأسمال + تعويضات</option>
                         <option value="gharama_ijbariya">غرامة إجبارية</option>
-                        <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
-                        <option value="wafaya_ras_mal">وفاة — رأس مال</option>
+                        <option value="wafaya_irad_omri">وفاة إيراد عمري</option>
+                        <option value="wafaya_ras_mal">وفاة رأس مال</option>
                         <option value="autre">أخرى</option>
                     </select>
                 </div>
-
-                <!-- حقول المبالغ العادية (تُخفى عند وفاة) -->
-                <div class="form-group" id="wrap_manual_montant_initial">
-                    <label>المبلغ الأصلي</label>
-                    <input type="number" step="0.01" min="0" name="montant_initial" id="manual_montant_initial" value="0" oninput="updateManualTotal()">
-                </div>
-                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise" value="0"></div>
-                <div class="form-group" id="wrap_manual_rasemal">
-                    <label>مصاريف العلاج</label>
-                    <input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="manual_rasemal" value="0" oninput="updateManualTotal()">
-                </div>
-                <div class="form-group" id="wrap_manual_taawidat">
-                    <label>تعويضات يومية</label>
-                    <input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" id="manual_taawidat" value="0" oninput="updateManualTotal()">
-                </div>
-
-                <!-- صندوق المجموع التلقائي (يظهر عند وجود علاج أو تعويضات أو وفاة) -->
-                <div class="form-group full" id="wrap_manual_total_preview" style="display:none">
-                    <label>💰 المبلغ الإجمالي للحساب</label>
-                    <input type="number" step="0.01" name="montant_calcul_total" id="manual_total_preview"
-                           style="background:rgba(123,79,44,0.08);border-color:var(--accent);font-weight:700;font-size:1rem;color:var(--accent);"
-                           readonly>
-                    <span style="font-size:0.7rem;color:var(--text3);margin-top:2px;" id="manual_total_formula"></span>
-                </div>
-
-                <!-- مصاريف الجنازة (وفاة فقط) -->
-                <div class="form-group full" id="wrap_manual_janaza" style="display:none">
-                    <label>مصاريف الجنازة</label>
-                    <input type="number" step="0.01" min="0" name="masarif_janaza" value="0">
-                </div>
-
-                <!-- قائمة المستفيدين (وفاة فقط) -->
-                <div class="form-group full" id="wrap_manual_benef" style="display:none">
-                    <label id="manual_benef_label">مبالغ المستفيدين</label>
-                    <div id="manual_benef_list"></div>
-                    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.4rem;" onclick="addManualBenefRow()">＋ مستفيد</button>
-                </div>
-
                 <div class="form-group full"><label>وصف الملف</label><input type="text" name="type_malaf"></div>
                 <div class="form-group full"><label>اسم المصاب</label><input type="text" name="nom_victime"></div>
             </div>
@@ -610,7 +570,7 @@
                     </select>
                 </div>
                 <div class="form-group full"><label>وصف الملف</label><input type="text" name="type_malaf" id="edit_type_malaf"></div>
-                <div class="form-group"><label>مصاريف العلاج</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="edit_montant_rasemal_ijmali"></div>
+                <div class="form-group"><label>رأسمال إجمالي</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="edit_montant_rasemal_ijmali"></div>
                 <div class="form-group"><label>تعويضات يومية</label><input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" id="edit_montant_taawidat_youmiya"></div>
                 <div class="form-group"><label>مصاريف الجنازة</label><input type="number" step="0.01" min="0" name="masarif_janaza" id="edit_masarif_janaza"></div>
                 <div class="form-group full" id="edit_benef_wrap">
@@ -844,113 +804,10 @@ function saveDossier(id) {
         } else if (data.message) { alert(data.message); }
     });
 }
-// Assurance selector (modal manuel)
-document.getElementById('manual_nom_assurance').addEventListener('change', function() {
-    document.getElementById('wrap_autre_assurance_manual').style.display = this.value === 'autre' ? '' : 'none';
+document.querySelector('select[name="nom_assurance"]').addEventListener('change', function() {
+    var wrap = document.getElementById('wrap_autre_assurance');
+    wrap.style.display = this.value === 'autre' ? '' : 'none';
 });
-
-// ─── MODAL MANUEL — logique dynamique ───────────────────────────────────────
-
-function onManualTypeCasChange() {
-    var type = document.getElementById('manual_type_cas').value;
-    var isWafa = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
-    var isFoisDix = type === 'wafaya_irad_omri';
-
-    // Champs montant normaux : cachés si wafat
-    document.getElementById('wrap_manual_montant_initial').style.display = isWafa ? 'none' : '';
-    document.getElementById('wrap_manual_rasemal').style.display         = isWafa ? 'none' : '';
-    document.getElementById('wrap_manual_taawidat').style.display        = isWafa ? 'none' : '';
-
-    // Janaza et bénéficiaires : visibles si wafat
-    document.getElementById('wrap_manual_janaza').style.display = isWafa ? '' : 'none';
-    document.getElementById('wrap_manual_benef').style.display  = isWafa ? '' : 'none';
-
-    // Label selon type
-    if (isFoisDix) {
-        document.getElementById('manual_benef_label').textContent = 'مبالغ المستفيدين (كل مبلغ × 10)';
-    } else {
-        document.getElementById('manual_benef_label').textContent = 'مبالغ المستفيدين';
-    }
-
-    // Si on vient de choisir wafat et liste vide → ajouter 1 ligne
-    if (isWafa && document.getElementById('manual_benef_list').children.length === 0) {
-        addManualBenefRow();
-    }
-
-    // Si non wafat, vider la liste bénéficiaires
-    if (!isWafa) {
-        document.getElementById('manual_benef_list').innerHTML = '';
-    }
-
-    updateManualTotal();
-}
-
-function addManualBenefRow() {
-    var box = document.getElementById('manual_benef_list');
-    var idx = box.children.length + 1;
-    var d = document.createElement('div');
-    d.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;';
-    d.innerHTML =
-        '<span style="font-size:0.75rem;color:var(--text3);min-width:70px;">مستفيد ' + idx + '</span>' +
-        '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="0" ' +
-        '       style="flex:1;" oninput="updateManualTotal()">' +
-        '<button type="button" onclick="removeManualBenefRow(this)" ' +
-        '        style="background:var(--error);color:#fff;border:none;border-radius:6px;padding:0.25rem 0.5rem;cursor:pointer;font-size:0.8rem;">✕</button>';
-    box.appendChild(d);
-    updateManualTotal();
-}
-
-function removeManualBenefRow(btn) {
-    btn.closest('div').remove();
-    // Renuméroter
-    var spans = document.querySelectorAll('#manual_benef_list span');
-    spans.forEach(function(s, i) { s.textContent = 'مستفيد ' + (i + 1); });
-    updateManualTotal();
-}
-
-function updateManualTotal() {
-    var type = document.getElementById('manual_type_cas').value;
-    var isWafa = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
-    var isFoisDix = type === 'wafaya_irad_omri';
-
-    var wrapPreview = document.getElementById('wrap_manual_total_preview');
-    var inputTotal  = document.getElementById('manual_total_preview');
-    var formulaSpan = document.getElementById('manual_total_formula');
-
-    if (isWafa) {
-        // Somme des bénéficiaires (× 10 si irad omri)
-        var inputs = document.querySelectorAll('#manual_benef_list input[name^="beneficiaires"]');
-        var sum = 0;
-        inputs.forEach(function(inp) { sum += parseFloat(inp.value) || 0; });
-        var total = isFoisDix ? sum * 10 : sum;
-        inputTotal.value = total.toFixed(2);
-        if (isFoisDix) {
-            formulaSpan.textContent = 'مجموع المستفيدين (' + sum.toFixed(2) + ') × 10 = ' + total.toFixed(2) + ' درهم';
-        } else {
-            formulaSpan.textContent = 'مجموع المستفيدين = ' + total.toFixed(2) + ' درهم';
-        }
-        wrapPreview.style.display = '';
-        return;
-    }
-
-    var mi  = parseFloat(document.getElementById('manual_montant_initial').value) || 0;
-    var ra  = parseFloat(document.getElementById('manual_rasemal').value) || 0;
-    var ta  = parseFloat(document.getElementById('manual_taawidat').value) || 0;
-
-    // Afficher le total uniquement si علاج أو تعويضات موجودين
-    if (ra > 0 || ta > 0) {
-        var total = mi + ra + ta;
-        inputTotal.value = total.toFixed(2);
-        var parts = [];
-        parts.push('المبلغ الأصلي: ' + mi.toFixed(2));
-        if (ra > 0) parts.push('مصاريف العلاج: ' + ra.toFixed(2));
-        if (ta > 0) parts.push('تعويضات يومية: ' + ta.toFixed(2));
-        formulaSpan.textContent = parts.join(' + ') + ' = ' + total.toFixed(2) + ' درهم';
-        wrapPreview.style.display = '';
-    } else {
-        wrapPreview.style.display = 'none';
-    }
-}
 </script>
 </body>
 </html>
