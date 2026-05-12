@@ -3,10 +3,15 @@ echo "=== Starting php-fpm ==="
 /usr/local/sbin/php-fpm -D
 sleep 3
 
+echo "=== ENV VARS DEBUG ==="
+echo "DB_HOST=$DB_HOST"
+echo "DB_PORT=$DB_PORT"
+echo "MYSQLHOST=$MYSQLHOST"
+echo "MYSQLPORT=$MYSQLPORT"
+
 echo "=== Setting up .env ==="
 cd /var/www/html
 
-# Écrire les variables Railway directement dans .env
 cat > .env << EOF
 APP_NAME=Laravel
 APP_ENV=production
