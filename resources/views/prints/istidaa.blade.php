@@ -108,7 +108,7 @@
             </div>
             <!-- Texte aligné à droite, au même niveau que le logo -->
             <div class="header-text">
-                <div class="header-line">المملكة المغربة</div>
+                <div class="header-line">المملكة المغربية</div>
                 <div class="header-line">وزارة العدل</div>
                 <div class="header-line">محكمة الاستئناف بالجديدة</div>
                 <div class="header-line-bold">المحكمة الابتدائية بالجديدة</div>

@@ -889,7 +889,7 @@ tr:hover td { background: var(--sky-soft); }
 
             <!-- hidden field for custom company name -->
             <input type="hidden" name="nom_assurance_custom" id="manual_nom_assurance_custom">
-            <input type="hidden" name="montant_initial" id="nizaat_montant_hidden"> 
+           <input type="hidden" name="montant_initial_nizaat" id="nizaat_montant_hidden"> 
 
             <div class="modal-actions">
                 <button type="button" class="btn btn-ghost"

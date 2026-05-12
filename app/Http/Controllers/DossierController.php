@@ -10,14 +10,13 @@ use App\Services\DocumentGenerationService;
 use App\Services\InsuranceDetectionService;
 use App\Services\OcrService;
 use App\Services\ProducedDocumentService;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Models\Calcul;
-
+use Carbon\Carbon;
 
 class DossierController extends Controller
 {
@@ -122,7 +121,7 @@ if (!empty($structured['numero_dossier'])) {
 
         return redirect()->route('dashboard')->with('success', 'تم تحليل المستند بنجاح.');
     }
-public function imprimer($id)
+public function imprimer(int $id)
 {
     $dossier = Dossier::findOrFail($id);
 
@@ -359,7 +358,7 @@ public function imprimer($id)
 
         return response()->download($zip, 'dossier_'.$dossier->id.'_documents.zip')->deleteFileAfterSend(true);
     }
-    public function testExtraction($id)
+    public function testExtraction(int $id)
 {
     $dossier = Dossier::findOrFail($id);
     $chemin = storage_path('app/public/' . $dossier->fichier);
