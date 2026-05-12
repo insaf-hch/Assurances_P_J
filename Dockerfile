@@ -13,8 +13,7 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-COPY .env.example .env
-RUN php artisan key:generate
+RUN cp .env.example .env && php artisan key:generate
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
