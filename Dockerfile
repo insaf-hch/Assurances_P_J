@@ -14,7 +14,8 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && a2enmod rewrite
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite
 
 COPY .env.example .env
 RUN php artisan key:generate
