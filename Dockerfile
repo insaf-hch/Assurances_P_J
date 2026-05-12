@@ -1,7 +1,7 @@
 FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libzip-dev libpng-dev libonig-dev libjpeg-dev libfreetype6-dev nginx \
+    git curl zip unzip libzip-dev libpng-dev libonig-dev libjpeg-dev libfreetype6-dev nginx supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring zip gd
 
@@ -19,9 +19,8 @@ RUN php artisan key:generate
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
 
-COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
-CMD ["/start.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
