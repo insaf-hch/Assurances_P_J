@@ -22,4 +22,6 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 80
 
-CMD bash -c "php-fpm -D && nginx -g 'daemon off;'"
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
+CMD ["/start.sh"]
