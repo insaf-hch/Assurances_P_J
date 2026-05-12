@@ -1,14 +1,17 @@
 #!/bin/bash
 export PORT=${PORT:-8080}
 
-# Copier le template et substituer le port
+echo "=== PORT is: $PORT ==="
+
 cp /etc/nginx/sites-available/default.template /etc/nginx/sites-available/default
 sed -i "s/\${PORT}/$PORT/g" /etc/nginx/sites-available/default
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-# Démarrer php-fpm en arrière-plan
+echo "=== nginx config ==="
+cat /etc/nginx/sites-available/default
+
 php-fpm -D
 sleep 2
 
-# Démarrer nginx au premier plan
+echo "=== starting nginx ==="
 exec nginx -g "daemon off;"
