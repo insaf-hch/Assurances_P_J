@@ -1,3 +1,4 @@
+@"
 FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y \
@@ -14,8 +15,8 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork rewrite
+    && a2enmod rewrite \
+    && sed -i 's/^#LoadModule mpm_prefork/LoadModule mpm_prefork/' /etc/apache2/mods-available/mpm_prefork.conf || true
 
 COPY .env.example .env
 RUN php artisan key:generate
@@ -25,3 +26,4 @@ RUN chown -R www-data:www-data /var/www/html/storage
 EXPOSE 80
 
 CMD ["apache2-foreground"]
+"@ | Set-Content Dockerfile -Encoding UTF8
