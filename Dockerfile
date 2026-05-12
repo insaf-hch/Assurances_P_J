@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libpng-dev libonig-dev libjpeg-dev libfreetype6-dev \
@@ -11,7 +11,7 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
     && a2enmod rewrite
