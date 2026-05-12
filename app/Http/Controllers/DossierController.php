@@ -153,6 +153,8 @@ public function imprimer($id)
         'montant_initial' => 'nullable|numeric|min:0',
         'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
         'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
+        'montant_taawidat' => 'nullable|numeric|min:0',           // ← ajouter
+        'montant_masarif_tibiya' => 'nullable|numeric|min:0', 
         'masarif_janaza' => 'nullable|numeric|min:0',
         'type_malaf' => 'nullable|string|max:255',
         'beneficiaires' => 'nullable|array',
@@ -212,6 +214,8 @@ public function imprimer($id)
             'montant_initial' => $montantInitial,
             'montant_rasemal_ijmali' => $montantRasemal,
             'montant_taawidat_youmiya' => $montantTaawidat,
+            'montant_taawidat'        => (float) ($validated['montant_taawidat']        ?? 0), // ← ajouter
+            'montant_masarif_tibiya'  => (float) ($validated['montant_masarif_tibiya']  ?? 0), // 
             'masarif_janaza' => $masarifJanaza,
             'type_malaf' => $validated['type_malaf'] ?? $dossier->type_malaf,
             'beneficiaires_json' => $beneficiairesJson,
@@ -235,7 +239,9 @@ public function imprimer($id)
         'adresse_assurance' => 'nullable|string|max:500',
         'montant_initial' => 'nullable|numeric|min:0',
         'expertise' => 'nullable|numeric|min:0',
-        'type_cas' => 'nullable|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,autre',
+        'montant_taawidat'       => 'nullable|numeric|min:0',
+        'montant_masarif_tibiya' => 'nullable|numeric|min:0',
+        'type_cas' => 'nullable|in:irad_omri,irad_omri_ras_mal,masdar_total_taawidat,gharama_ijbariya,wafaya_irad_omri,wafaya_ras_mal,nizaat_shughl',
         'montant_rasemal_ijmali' => 'nullable|numeric|min:0',
         'montant_taawidat_youmiya' => 'nullable|numeric|min:0',
         'masarif_janaza' => 'nullable|numeric|min:0',
@@ -270,8 +276,10 @@ public function imprimer($id)
     // ✅ S'assurer que toutes les valeurs numériques sont bien des floats
     $updateData = [];
     foreach ($validated as $key => $value) {
-        if (in_array($key, ['expertise', 'montant_initial', 'montant_rasemal_ijmali', 'montant_taawidat_youmiya', 'masarif_janaza'])) {
+        if (in_array($key, ['expertise', 'montant_initial', 'montant_rasemal_ijmali', 
+        'montant_taawidat_youmiya', 'masarif_janaza','montant_taawidat','montant_masarif_tibiya',  ])) {
             $updateData[$key] = (float) ($value ?? 0);
+            
         } else {
             $updateData[$key] = $value;
         }

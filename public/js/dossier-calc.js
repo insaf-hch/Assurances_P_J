@@ -60,44 +60,54 @@
         return round2(m * 0.01 + 300);
     }
 
-    function buildBreakdown(state) {
-        var type         = state.type_cas || 'autre';
-        var montantPour  = montantPourRasm(state);
-        var rasm         = rasmQadai(montantPour);
-        var expertise    = parseFloat(state.expertise) || 0;
-        var rusumMurafaa = 10;
-        var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
-        var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
-                            ? parseFloat(state.masarif_janaza) || 0
-                            : 0;
+function buildBreakdown(state) {
+    var type         = state.type_cas || 'autre';
+    var montantPour  = montantPourRasm(state);
+    var rasm         = rasmQadai(montantPour);
+    var expertise    = parseFloat(state.expertise) || 0;
+    var rusumMurafaa = 10;
+    var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
+    var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
+                        ? parseFloat(state.masarif_janaza) || 0
+                        : 0;
 
-        var total = round2(rasm + rusumMurafaa + rasmBahth + expertise + janaza);
+    // ── Nouveaux champs ──
+    var taawidat      = parseFloat(state.montant_taawidat)       || 0;
+    var masarifTibiya = parseFloat(state.montant_masarif_tibiya) || 0;
 
-        var montantAfficheOriginal;
-        if (type === 'masdar_total_taawidat') {
-            montantAfficheOriginal = round2(
-                (parseFloat(state.montant_rasemal_ijmali) || 0) +
-                (parseFloat(state.montant_taawidat_youmiya) || 0)
-            );
-        } else if (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal') {
-            montantAfficheOriginal = montantPour;
-        } else {
-            montantAfficheOriginal = round2(parseFloat(state.montant_initial) || 0);
-        }
+    var total = round2(rasm + rusumMurafaa + rasmBahth + expertise + janaza);
 
-        return {
-            montant_pour_rasm : montantPour,
-            montant_original  : montantAfficheOriginal,
-            rasm_qadai        : rasm,
-            rusum_murafaa     : rusumMurafaa,
-            rasm_bahth        : rasmBahth,
-            expertise         : round2(expertise),
-            masarif_janaza    : round2(janaza),
-            total             : total,
-            type_cas          : type,
-        };
+    // ── montant affiché dans la ligne "المبلغ" ──
+    var montantAfficheOriginal;
+    if (type === 'masdar_total_taawidat') {
+        montantAfficheOriginal = round2(
+            (parseFloat(state.montant_rasemal_ijmali) || 0) +
+            (parseFloat(state.montant_taawidat_youmiya) || 0)
+        );
+    } else if (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal') {
+        montantAfficheOriginal = montantPour;
+    } else {
+        montantAfficheOriginal = round2(parseFloat(state.montant_initial) || 0);
     }
 
+    // ── المجموع = montant_original + taawidat + masarif_tibiya + janaza ──
+    var majmou = round2(montantAfficheOriginal + taawidat + masarifTibiya + janaza);
+
+    return {
+        montant           : montantAfficheOriginal,   // المبلغ
+        montant_taawidat  : taawidat,                 // التعويضات
+        montant_masarif_tibiya : masarifTibiya,        // المصاريف الطبية
+        masarif_janaza    : round2(janaza),            // مصاريف الجنازة
+        montant_original  : majmou,                   // المجموع
+        rasm_qadai        : rasm,                     // الرسم القضائي
+        rusum_murafaa     : rusumMurafaa,              // حقوق المرافعة
+        rasm_bahth        : rasmBahth,                 // رسم البحث
+        expertise         : round2(expertise),         // الخبرة
+        total             : total,                     // المبلغ المؤدى
+        type_cas          : type,
+        montant_pour_rasm : montantPour,
+    };
+}
     function formatMoney(n) {
         return (Number(n) || 0).toLocaleString('fr-FR', {
             minimumFractionDigits: 2,

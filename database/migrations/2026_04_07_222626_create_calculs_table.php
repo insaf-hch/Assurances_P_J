@@ -34,6 +34,9 @@ return new class extends Migration
 
             // Date génération document
             $table->date('date_generation')->nullable();
+            $table->decimal('masarif_janaza', 12, 2)->default(0); 
+            $table->string('type_cas_applique')->nullable(); 
+            $table->json('details_calcul')->nullable();
 
             $table->timestamps();
         });

@@ -44,6 +44,15 @@ class CalculService
     public function getMontantOriginalCalcule(Dossier $dossier): float
     {
         $typeCas = $dossier->type_cas;
+            if ($typeCas === 'nizaat_shughl') {
+        return round(
+            ($dossier->nizaat_darar    ?? 0) +
+            ($dossier->nizaat_ikhtar   ?? 0) +
+            ($dossier->nizaat_otla     ?? 0) +
+            ($dossier->nizaat_aqdamiya ?? 0),
+            2
+        );
+    }
         $montantInitial = (float) ($dossier->montant_initial ?? 0);
         $rasemal = (float) ($dossier->montant_rasemal_ijmali ?? 0);
         $taawidat = (float) ($dossier->montant_taawidat_youmiya ?? 0);
@@ -96,100 +105,104 @@ class CalculService
         return round($sum, 2);
     }
 
-    public function createOrUpdateCalcul(Dossier $dossier): Calcul
-    {
-        if (is_null($dossier->montant_initial)) {
-            throw new \InvalidArgumentException(
-                "Le montant initial est manquant pour le dossier #{$dossier->id}"
-            );
-        }
-
-        $montantBase   = $this->getMontantDeBase($dossier);
-        $rasmQadai     = $this->calculerFraisJustice($montantBase);
-        $rusumMurafaa  = 10.00;
-        $rasmBahth     = $dossier->type_cas === 'gharama_ijbariya' ? 0.00 : 20.00;
-        $expertise     = (float) ($dossier->expertise ?? 0);
-        $masarifJanaza = (float) ($dossier->masarif_janaza ?? 0);
-
-        $total = ceil($rasmQadai + $rusumMurafaa + $rasmBahth + $expertise + $masarifJanaza);
-
-        $details = [
-            'montant_original'  => (float) $dossier->montant_initial,
-            'montant_rasemal'   => (float) ($dossier->montant_rasemal_ijmali ?? 0),
-            'montant_taawidat'  => (float) ($dossier->montant_taawidat_youmiya ?? 0),
-            'bareme_applique'   => $this->getBaremeDescription($montantBase),
-            'formule'           => $this->getFormuleDetaillee($montantBase),
-            'date_calcul'       => now()->toDateTimeString(),
-        ];
-
-        Log::info('Calcul effectué', [
-            'dossier_id'  => $dossier->id,
-            'montant_base'=> $montantBase,
-            'rasm_qadai'  => $rasmQadai,
-            'total'       => $total,
-        ]);
-
-        return Calcul::updateOrCreate(
-            ['dossier_id' => $dossier->id],
-            [
-                'montant_apres_cas'   => $montantBase,
-                'rasm_qadai'          => $rasmQadai,
-                'rusum_murafaa'       => $rusumMurafaa,
-                'rasm_bahth'          => $rasmBahth,
-                'expertise'           => $expertise,
-                'masarif_janaza'      => $masarifJanaza,
-                'total'               => $total,
-                'total_en_lettres_ar' => $this->convertirEnLettres($total),
-                'type_cas_applique'   => $dossier->type_cas,
-                'details_calcul'      => $details,
-            ]
+   public function createOrUpdateCalcul(Dossier $dossier): Calcul
+{
+    if (is_null($dossier->montant_initial) && $dossier->type_cas !== 'nizaat_shughl') {
+        throw new \InvalidArgumentException(
+            "Le montant initial est manquant pour le dossier #{$dossier->id}"
         );
     }
 
-    /**
-     * حساب المبلغ الأساسي الذي يستخدم لحساب الرسم القضائي
-     */
-    private function getMontantDeBase(Dossier $dossier): float
-    {
-        $typeCas        = $dossier->type_cas;
-        $montantInitial = (float) ($dossier->montant_initial ?? 0);
-        $rasemal        = (float) ($dossier->montant_rasemal_ijmali ?? 0);
-        $taawidat       = (float) ($dossier->montant_taawidat_youmiya ?? 0);
-        $beneficiaires  = $dossier->beneficiaires_json;
+    $montantBase   = $this->getMontantDeBase($dossier);
+    $rasmQadai     = $this->calculerFraisJustice($montantBase);
+    $rusumMurafaa  = 10.00;
+    $rasmBahth     = $dossier->type_cas === 'gharama_ijbariya' ? 0.00 : 20.00;
+    $expertise     = (float) ($dossier->expertise ?? 0);
+    $masarifJanaza = (float) ($dossier->masarif_janaza ?? 0);
 
-        switch ($typeCas) {
+    $total = ceil($rasmQadai + $rusumMurafaa + $rasmBahth + $expertise + $masarifJanaza);
 
-            case 'irad_omri':
-                return $montantInitial * 10;
+    $details = [
+        'montant_original'  => (float) ($dossier->montant_initial ?? 0),
+        'montant_rasemal'   => (float) ($dossier->montant_rasemal_ijmali ?? 0),
+        'montant_taawidat'  => (float) ($dossier->montant_taawidat_youmiya ?? 0),
+        'bareme_applique'   => $this->getBaremeDescription($montantBase),
+        'formule'           => $this->getFormuleDetaillee($montantBase),
+        'date_calcul'       => now()->toDateTimeString(),
+    ];
 
-            case 'irad_omri_ras_mal':
-                return $montantInitial;
+    Log::info('Calcul effectué', [
+        'dossier_id'   => $dossier->id,
+        'montant_base' => $montantBase,
+        'rasm_qadai'   => $rasmQadai,
+        'total'        => $total,
+    ]);
 
-            case 'wafaya_irad_omri':
-                // مجموع المستفيدين × 10
-                return $this->sommeBeneficiaires($beneficiaires, true);
+    return Calcul::updateOrCreate(
+        ['dossier_id' => $dossier->id],
+        [
+            'montant_apres_cas'   => $montantBase,
+            'rasm_qadai'          => $rasmQadai,
+            'rusum_murafaa'       => $rusumMurafaa,
+            'rasm_bahth'          => $rasmBahth,
+            'expertise'           => $expertise,
+            'masarif_janaza'      => $masarifJanaza,
+            'total'               => $total,
+            'total_en_lettres_ar' => $this->convertirEnLettres($total),
+            'type_cas_applique'   => $dossier->type_cas,
+            'details_calcul'      => $details,
+        ]
+    );
+}
 
-            case 'wafaya_ras_mal':
-                // مجموع المستفيدين فقط
-                return $this->sommeBeneficiaires($beneficiaires, false);
+private function getMontantDeBase(Dossier $dossier): float
+{
+    $typeCas        = $dossier->type_cas;
+    $montantInitial = (float) ($dossier->montant_initial ?? 0);
+    $rasemal        = (float) ($dossier->montant_rasemal_ijmali ?? 0);
+    $taawidat       = (float) ($dossier->montant_taawidat_youmiya ?? 0);
+    $beneficiaires  = $dossier->beneficiaires_json;
 
-            case 'masdar_total_taawidat':
-                if ($rasemal > 0 || $taawidat > 0) {
-                    return round($rasemal + $taawidat, 2);
-                }
-                return $montantInitial;
+    switch ($typeCas) {
 
-            case 'gharama_ijbariya':
-                return $montantInitial;
+        case 'irad_omri':
+            return $montantInitial * 10;
 
-            case 'autre':
-            default:
-                if ($rasemal > 0 || $taawidat > 0) {
-                    return round($rasemal + $taawidat, 2);
-                }
-                return $montantInitial;
-        }
+        case 'irad_omri_ras_mal':
+            return $montantInitial;
+
+        case 'wafaya_irad_omri':
+            return $this->sommeBeneficiaires($beneficiaires, true);
+
+        case 'wafaya_ras_mal':
+            return $this->sommeBeneficiaires($beneficiaires, false);
+
+        case 'masdar_total_taawidat':
+            if ($rasemal > 0 || $taawidat > 0) {
+                return round($rasemal + $taawidat, 2);
+            }
+            return $montantInitial;
+
+        case 'gharama_ijbariya':
+            return $montantInitial;
+
+        case 'nizaat_shughl':          // ← ici dans le switch
+            return round(
+                ($dossier->nizaat_darar    ?? 0) +
+                ($dossier->nizaat_ikhtar   ?? 0) +
+                ($dossier->nizaat_otla     ?? 0) +
+                ($dossier->nizaat_aqdamiya ?? 0),
+                2
+            );
+
+        case 'autre':
+        default:
+            if ($rasemal > 0 || $taawidat > 0) {
+                return round($rasemal + $taawidat, 2);
+            }
+            return $montantInitial;
     }
+}
 
     private function getBaremeDescription(float $montant): string
     {
@@ -226,34 +239,52 @@ class CalculService
         return (string) $entier . ' درهماً';
     }
 
-    public function buildBreakdown(Dossier $dossier): array
-    {
-        $calcul = $dossier->calcul;
+  public function buildBreakdown(Dossier $dossier): array
+{
+    $calcul = $dossier->calcul;
+    if (!$calcul) return ['error' => 'Aucun calcul trouvé'];
 
-        if (!$calcul) return ['error' => 'Aucun calcul trouvé'];
+    $detailsCalcul = is_string($calcul->details_calcul)
+        ? json_decode($calcul->details_calcul, true)
+        : ($calcul->details_calcul ?? []);
 
-        $detailsCalcul = is_string($calcul->details_calcul)
-            ? json_decode($calcul->details_calcul, true)
-            : ($calcul->details_calcul ?? []);
+    $montantInitial  = (float) ($dossier->montant_initial ?? 0);
+    $taawidat        = (float) ($dossier->montant_taawidat ?? 0);
+    $masarifTibiya   = (float) ($dossier->montant_masarif_tibiya ?? 0);
+    $masarifJanaza   = (float) ($calcul->masarif_janaza ?? 0);
 
-        $montantOriginal = (float) (
-            $dossier->montant_initial
-            ?? $detailsCalcul['montant_original']
-            ?? $calcul->montant_apres_cas
-            ?? 0
+    // ── المجموع حسب نوع الحالة ──
+    if ($dossier->type_cas === 'nizaat_shughl') {
+        $majmou = round(
+            ($dossier->nizaat_darar    ?? 0) +
+            ($dossier->nizaat_ikhtar   ?? 0) +
+            ($dossier->nizaat_otla     ?? 0) +
+            ($dossier->nizaat_aqdamiya ?? 0),
+            2
         );
-
-        return [
-            'montant_original' => $montantOriginal,
-            'rasm_qadai'       => (float) ($calcul->rasm_qadai ?? 0),
-            'rusum_murafaa'    => (float) ($calcul->rusum_murafaa ?? 0),
-            'rasm_bahth'       => (float) ($calcul->rasm_bahth ?? 0),
-            'expertise'        => (float) ($calcul->expertise ?? 0),
-            'masarif_janaza'   => (float) ($calcul->masarif_janaza ?? 0),
-            'total'            => (float) ($calcul->total ?? 0),
-            'total_lettres'    => $calcul->total_en_lettres_ar,
-            'bareme'           => $detailsCalcul['bareme_applique'] ?? 'N/A',
-            'formule'          => $detailsCalcul['formule'] ?? 'N/A',
-        ];
+    } else {
+        $majmou = round($montantInitial + $taawidat + $masarifTibiya + $masarifJanaza, 2);
     }
+
+    return [
+        'type_cas'               => $dossier->type_cas,
+        'montant'                => $montantInitial,
+        'montant_taawidat'       => $taawidat,
+        'montant_masarif_tibiya' => $masarifTibiya,
+        'masarif_janaza'         => $masarifJanaza,
+        'montant_original'       => $majmou,
+        'nizaat_darar'           => (float) ($dossier->nizaat_darar    ?? 0),
+        'nizaat_ikhtar'          => (float) ($dossier->nizaat_ikhtar   ?? 0),
+        'nizaat_otla'            => (float) ($dossier->nizaat_otla     ?? 0),
+        'nizaat_aqdamiya'        => (float) ($dossier->nizaat_aqdamiya ?? 0),
+        'rasm_qadai'             => (float) ($calcul->rasm_qadai    ?? 0),
+        'rusum_murafaa'          => (float) ($calcul->rusum_murafaa ?? 0),
+        'rasm_bahth'             => (float) ($calcul->rasm_bahth    ?? 0),
+        'expertise'              => (float) ($calcul->expertise     ?? 0),
+        'total'                  => (float) ($calcul->total         ?? 0),
+        'total_lettres'          => $calcul->total_en_lettres_ar,
+        'bareme'                 => $detailsCalcul['bareme_applique'] ?? 'N/A',
+        'formule'                => $detailsCalcul['formule']         ?? 'N/A',
+    ];
+}
 }   

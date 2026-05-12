@@ -5,155 +5,343 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>نظام معالجة ملفات التأمين</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
 :root {
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --surface2: #f1f5f9;
-    --border: #e2e8f0;
-    --border2: #cbd5e1;
-    --text: #1e293b;
-    --text2: #475569;
-    --text3: #94a3b8;
-    --accent: #7B4F2C;
-    --accent2: #9C6B4A;
-    --brown-light: #E3D5CA;
-    --brown-bg: #F8F3EE;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --gold: #eab308;
+    /* Backgrounds */
+    --bg:         #ffffff;
+    --surface:    #FFFFFF;
+    --surface2:   #ffffff;
+
+    /* Borders */
+    --border:     #E4D9CE;
+    --border2:    #CDBFB0;
+
+    /* Text */
+    --text:       #000000;
+    --text2:      #000000;
+    --text3:      #000000;
+
+    /* Brown — accent principal */
+    --brown:      #7B4F2C;
+    --brown2:     #9C6B4A;
+    --brown-soft: #F5ECE3;
+    --brown-light:#E8D5C2;
+
+    /* Sky blue — accent secondaire */
+    --sky:        #76c4d8;
+    --sky2:       #38BDF8;
+    --sky-soft:   #E0F6FD;
+    --sky-dark:   #0369A1;
+
+    /* Sémantiques */
+    --success:      #5b8061;
+    --success-soft: #E8F5EC;
+    --warning:      #B45309;
+    --warning-soft: #FEF3C7;
+    --error:        #B91C1C;
+    --error-soft:   #FEE2E2;
 }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; }
-        .layout { display: flex; min-height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; flex-shrink: 0; }
-        .sidebar-logo { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
-        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .logo-text { font-size: 0.95rem; font-weight: 700; line-height: 1.2; }
-        .logo-sub { font-size: 0.7rem; color: var(--text3); font-weight: 400; }
-        .sidebar-nav { padding: 1rem 0; flex: 1; }
-        .nav-label { font-size: 0.65rem; font-weight: 700; color: var(--text3); letter-spacing: 0.1em; padding: 0.5rem 1.25rem; text-transform: uppercase; }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1.25rem; color: var(--text2); font-size: 0.875rem; cursor: pointer; transition: all 0.15s; border-right: 3px solid transparent; margin: 1px 0; text-decoration: none; }
-        .nav-item:hover { background: var(--surface2); color: var(--text); }
-        .nav-item.active { font-weight: 700; background: rgba(123,79,44,0.1); color: var(--accent); border-right-color: var(--accent); }
-        .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
-        .sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text3); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; }
+.layout { display: flex; min-height: 100vh; }
 
-        /* MAIN */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.875rem 2rem; display: flex; align-items: center; justify-content: space-between; }
-        .topbar-title { font-size: 1rem; font-weight: 600; }
-        .topbar-sub { font-size: 0.75rem; color: var(--text3); margin-top: 1px; }
-        .topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
-        .badge { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.75rem; color: var(--text2); }
-        .content { padding: 1.5rem 2rem; flex: 1; overflow-y: auto; }
+/* ─── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+    width: 248px;
+    background: linear-gradient(175deg, #4A2510 0%, #7B4F2C 55%, #9C6B4A 100%);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh; flex-shrink: 0;
+    box-shadow: 2px 0 18px rgba(75,37,16,0.18);
+}
+.sidebar-logo {
+    padding: 1.3rem 1.4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.13);
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.logo-icon {
+    width: 38px; height: 38px;
+    background: var(--sky);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(14,165,201,0.35);
+}
+.logo-text { font-size: 0.875rem; font-weight: 700; color: #fff; line-height: 1.25; }
+.logo-sub  { font-size: 0.65rem; color: rgba(255,255,255,0.55); font-weight: 400; }
+.sidebar-nav { padding: 0.75rem 0; flex: 1; }
+.nav-label {
+    font-size: 0.6rem; font-weight: 700;
+    color: rgba(255,255,255,0.38);
+    letter-spacing: 0.13em;
+    padding: 0.8rem 1.3rem 0.35rem;
+    text-transform: uppercase;
+}
+.nav-item {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.62rem 1.3rem;
+    color: rgba(255,255,255,0.68);
+    font-size: 0.83rem; font-weight: 400;
+    cursor: pointer; transition: all 0.13s;
+    border-right: 3px solid transparent;
+    text-decoration: none; margin: 1px 0;
+}
+.nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-item.active {
+    font-weight: 600;
+    background: rgba(14,165,201,0.2);
+    color: #fff;
+    border-right-color: var(--sky2);
+}
+.nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+.sidebar-footer {
+    padding: 1rem 1.3rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.68rem; color: rgba(255,255,255,0.35);
+}
 
-        /* PANELS */
-        .panels-grid { display: flex; flex-direction: column; gap: 1.25rem; }
-        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-        .panel-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .panel-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .panel-title-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+/* ─── MAIN ────────────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-        /* UPLOAD */
-        .upload-zone { border: 1px dashed var(--border2); padding: 0.5rem; border-radius: 8px; max-width: 300px; cursor: pointer; transition: all 0.2s; }
-        .upload-zone:hover { border-color: var(--accent); background: rgba(139,94,60,0.08); }
-        .upload-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
-        .upload-title { font-size: 0.7rem; font-weight: 500; }
-        .upload-sub { font-size: 0.65rem; }
-        input[type="file"] { display: none; }
+.topbar {
+    background: var(--surface);
+    border-bottom: 2px solid var(--brown-light);
+    padding: 0.9rem 1.75rem;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-title { font-size: 1rem; font-weight: 700; color: var(--brown); }
+.topbar-sub   { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+.topbar-actions { display: flex; gap: 0.65rem; align-items: center; }
 
-        /* FORM */
-        .modal-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-        .modal-form-grid .full { grid-column: 1/-1; }
-        .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
-        .form-group.full { grid-column: 1 / -1; }
-        label { font-size: 0.72rem; font-weight: 600; color: var(--text3); letter-spacing: 0.02em; }
-        input, select, textarea { background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; padding: 0.5rem 0.75rem; color: var(--text); font-family: 'Cairo', sans-serif; font-size: 0.83rem; transition: border-color 0.15s; width: 100%; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        select option { background: var(--surface2); }
+.badge {
+    background: var(--brown-soft);
+    border: 1px solid var(--brown-light);
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.72rem; color: var(--brown); font-weight: 600;
+}
 
-        /* BUTTONS */
-        .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.1rem; border: none; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 0.83rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-decoration: none; }
-        .btn-primary { background: var(--accent); color: #fff; }
-        .btn-primary:hover { background: var(--accent2); }
-        .btn-success { background: var(--success); color: #fff; }
-        .btn-success:hover { filter: brightness(1.1); }
-        .btn-warning { background: var(--warning); color: #000; }
-        .btn-warning:hover { filter: brightness(1.1); }
-        .btn-danger { background: var(--error); color: #fff; }
-        .btn-danger:hover { filter: brightness(1.1); }
-        .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
-        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
-        .btn-full { width: 100%; justify-content: center; }
+.content { padding: 1.25rem 1.75rem; flex: 1; overflow-y: auto; }
 
-        /* TABLE */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-        thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
-        th { padding: 0.65rem 0.75rem; font-size: 0.7rem; font-weight: 700; color: var(--text3); letter-spacing: 0.04em; text-align: right; white-space: nowrap; }
-        td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; text-align: right; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(123,79,44,0.05); }
+/* ─── PANELS ──────────────────────────────────────────────── */
+.panels-grid { display: flex; flex-direction: column; gap: 1.1rem; }
 
-        /* CHIPS */
-        .chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; }
-        .chip-blue { background: rgba(123,79,44,0.15); color: var(--accent); }
-        .chip-green { background: rgba(16,185,129,0.15); color: #34d399; }
-        .chip-warning { background: rgba(245,158,11,0.15); color: #fbbf24; }
-        .chip-muted { background: var(--surface2); color: var(--text3); }
-        .chip::before { content: '●'; font-size: 0.5rem; }
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(123,79,44,0.06);
+}
+.panel-header {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(90deg, var(--brown-soft) 0%, #fff 60%);
+}
+.panel-title {
+    font-size: 0.92rem; font-weight: 700;
+    display: flex; align-items: center; gap: 0.5rem;
+    color: var(--brown);
+}
+.panel-title-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--sky);
+    box-shadow: 0 0 0 3px rgba(14,165,201,0.15);
+}
 
-        /* ALERTS */
-        .alert { padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 0.5rem; }
-        .alert-success { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
-        .alert-error { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+/* ─── UPLOAD ROW ──────────────────────────────────────────── */
+.upload-row {
+    padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 0.875rem;
+}
+.upload-zone {
+    flex: 1; min-width: 0;
+    border: 1.5px dashed var(--border2);
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    cursor: pointer; transition: all 0.18s;
+    display: flex; align-items: center; gap: 0.75rem;
+    background: var(--bg);
+}
+.upload-zone:hover { border-color: var(--sky); background: var(--sky-soft); }
+.upload-zone-icon { font-size: 1.2rem; flex-shrink: 0; }
+.upload-zone-text { min-width: 0; }
+.upload-title { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.upload-sub   { font-size: 0.68rem; color: var(--text3); margin-top: 1px; }
+input[type="file"] { display: none; }
 
-        /* EMPTY */
-        .empty { text-align: center; padding: 3rem 1.5rem; color: var(--text3); }
-        .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
-        .empty-title { font-size: 0.9rem; font-weight: 600; color: var(--text2); margin-bottom: 0.25rem; }
+/* ─── FORM ────────────────────────────────────────────────── */
+.modal-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.28rem; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 0.7rem; font-weight: 600; color: var(--text3); letter-spacing: 0.02em; }
+input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    padding: 0.48rem 0.72rem;
+    color: var(--text);
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-size: 0.82rem;
+    transition: border-color 0.13s;
+    width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(14,165,201,0.1); }
+select option { background: var(--surface); }
 
-        /* ACTIONS */
-        .actions-row { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+/* ─── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; gap: 0.38rem;
+    padding: 0.5rem 1rem;
+    border: none; border-radius: 7px;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.13s; text-decoration: none;
+}
+.btn-primary  { background: var(--sky); color: #fff; }
+.btn-primary:hover { background: var(--sky-dark); }
+.btn-success  { background: var(--success); color: #fff; }
+.btn-success:hover { filter: brightness(1.1); }
+.btn-warning  { background: var(--brown); color: #fff; }
+.btn-warning:hover { background: var(--brown2); }
+.btn-danger   { background: var(--error); color: #fff; }
+.btn-danger:hover { filter: brightness(1.1); }
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+}
+.btn-ghost:hover { border-color: var(--sky); color: var(--sky-dark); }
+.btn-sm   { padding: 0.28rem 0.6rem; font-size: 0.71rem; }
+.btn-full { width: 100%; justify-content: center; }
 
-        /* SAVE CHECKBOX */
-        .save-checkbox-cell { text-align: center !important; }
-        .save-checkbox-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
-        .custom-checkbox { width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
-        .save-btn-inline { font-size: 0.62rem; padding: 0.2rem 0.4rem; background: var(--success); color: #fff; border: none; border-radius: 5px; cursor: pointer; font-family: 'Cairo', sans-serif; display: none; }
-        .save-btn-inline.visible { display: inline-flex; }
+/* ─── TABLE ───────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+thead tr {
+    background: linear-gradient(90deg, var(--brown-soft) 0%, #FBF6F1 100%);
+    border-bottom: 2px solid var(--brown-light);
+}
+th {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.67rem; font-weight: 700;
+    color: var(--brown); letter-spacing: 0.06em;
+    text-align: right; white-space: nowrap;
+    text-transform: uppercase;
+}
+td {
+    padding: 0.62rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle; text-align: right;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--sky-soft); }
 
-        /* MODAL */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.open { display: flex; }
-        .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 1.5rem; width: 480px; max-width: 95vw; max-height: 92vh; overflow-y: auto; animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-        .modal-title { font-size: 1rem; font-weight: 700; }
-        .modal-close { background: none; border: none; color: var(--text3); font-size: 1.3rem; cursor: pointer; line-height: 1; }
-        .modal-close:hover { color: var(--text); }
-        .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; justify-content: flex-end; }
+/* ─── CHIPS ───────────────────────────────────────────────── */
+.chip {
+    display: inline-flex; align-items: center; gap: 0.28rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.67rem; font-weight: 600;
+}
+.chip::before { content: '●'; font-size: 0.45rem; }
+.chip-blue    { background: var(--sky-soft);    color: var(--sky-dark); }
+.chip-green   { background: var(--success-soft);color: var(--success);  }
+.chip-warning { background: var(--warning-soft);color: var(--warning);  }
+.chip-muted   { background: var(--surface2);    color: var(--text3);    }
 
-        /* PAGINATION */
-        .pagination { display: flex; gap: 0.5rem; align-items: center; justify-content: center; padding: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text3); }
-        .pagination a { color: var(--accent); }
+/* ─── ALERTS ──────────────────────────────────────────────── */
+.alert {
+    padding: 0.72rem 1rem; border-radius: 9px;
+    margin-bottom: 0.875rem; font-size: 0.83rem;
+    display: flex; align-items: flex-start; gap: 0.5rem;
+}
+.alert-success { background: var(--success-soft); color: var(--success); border: 1px solid #C0DD97; }
+.alert-error   { background: var(--error-soft);   color: var(--error);   border: 1px solid #FCA5A5; }
 
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+/* ─── EMPTY ───────────────────────────────────────────────── */
+.empty { text-align: center; padding: 2.5rem 1.5rem; color: var(--text3); }
+.empty-icon  { font-size: 2.2rem; margin-bottom: 0.6rem; opacity: 0.4; }
+.empty-title { font-size: 0.88rem; font-weight: 600; color: var(--text2); margin-bottom: 0.2rem; }
+
+/* ─── ACTIONS ROW ─────────────────────────────────────────── */
+.actions-row { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+
+/* ─── SAVE CHECKBOX ───────────────────────────────────────── */
+.save-checkbox-cell { text-align: center !important; }
+.save-checkbox-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+.custom-checkbox { width: 16px; height: 16px; accent-color: var(--sky); cursor: pointer; }
+.save-btn-inline {
+    font-size: 0.6rem; padding: 0.18rem 0.38rem;
+    background: var(--sky); color: #fff;
+    border: none; border-radius: 4px; cursor: pointer;
+    font-family: 'IBM Plex Sans Arabic', sans-serif; display: none;
+}
+.save-btn-inline.visible { display: inline-flex; }
+
+/* ─── MODAL ───────────────────────────────────────────────── */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(43,26,14,0.6);
+    z-index: 1000; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    width: 550px; max-width: 95vw; max-height: 92vh; overflow-y: auto;
+    animation: modalIn 0.18s ease;
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; }
+.modal-title  { font-size: 0.95rem; font-weight: 700; color: var(--brown); }
+.modal-close  { background: none; border: none; color: var(--text3); font-size: 1.2rem; cursor: pointer; }
+.modal-close:hover { color: var(--brown); }
+.modal-actions { display: flex; gap: 0.65rem; margin-top: 1.1rem; justify-content: flex-end; }
+
+/* ─── PAGINATION ──────────────────────────────────────────── */
+.pagination {
+    display: flex; gap: 0.5rem; align-items: center; justify-content: center;
+    padding: 0.875rem; border-top: 1px solid var(--border);
+    font-size: 0.78rem; color: var(--text3);
+}
+.pagination a { color: var(--sky-dark); text-decoration: none; font-weight: 600; }
+
+/* ─── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ─── NEW FIELDS SECTION ─────────────────────────────────── */
+.section-divider {
+    grid-column: 1 / -1;
+    border-top: 1px dashed var(--border2);
+    margin: 0.5rem 0 0.25rem;
+    padding-top: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--brown);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.section-divider span {
+    background: var(--brown-soft);
+    padding: 0.1rem 0.5rem;
+    border-radius: 16px;
+}
     </style>
 </head>
 <body>
 <div class="layout">
 
-    <!-- SIDEBAR -->
+    <!-- ═══ SIDEBAR ═══════════════════════════════════════════ -->
     <aside class="sidebar">
         <div class="sidebar-logo">
             <div class="logo-icon">⚖️</div>
@@ -164,20 +352,20 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">القائمة الرئيسية</div>
-            {{-- الصفحة الحالية: الملفات --}}
             <a href="{{ url('/dashboard') }}" class="nav-item active">
                 <span class="nav-icon">🗂️</span> الملفات
             </a>
-            {{-- رابط للصفحة المنفصلة للوثائق --}}
             <a href="{{ route('wathaiq.index') }}" class="nav-item">
                 <span class="nav-icon">📄</span> الوثائق المُنتجة
             </a>
         </nav>
-        <div class="sidebar-footer">نظام معالجة حوادث الشغل — v1.0</div>
+        <div class="sidebar-footer">نظام معالجة حوادث الشغل </div>
     </aside>
 
-    <!-- MAIN -->
+    <!-- ═══ MAIN ═══════════════════════════════════════════════ -->
     <main class="main">
+
+        <!-- TOPBAR -->
         <div class="topbar">
             <div>
                 <div class="topbar-title">لوحة تتبع الملفات</div>
@@ -199,7 +387,7 @@
 
             <div class="panels-grid">
 
-                <!-- UPLOAD PDF -->
+                <!-- ── UPLOAD PDF ─────────────────────────────── -->
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title">
@@ -209,35 +397,42 @@
                     </div>
                     <form method="post" action="{{ route('upload') }}" enctype="multipart/form-data">
                         @csrf
-                        <div style="padding: 1.25rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                         <div class="upload-zone" id="uploadZone" 
-                            style="flex:1; min-width:250px;"
-                            onclick="document.getElementById('fileInput').click()">
-                        <div class="upload-icon" id="uploadIcon">📤</div>
-                        <div class="upload-title" id="uploadTitle">اسحب الملف هنا أو انقر للاختيار</div>
-                        <div class="upload-sub" id="fileName">PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت</div>
-                        <input type="file" name="document" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" required
-                            onchange="handleFileSelect(this)">
-                    </div>
-                        </div>
-                        <div style="padding: 0 1.25rem 1.25rem; display:flex; justify-content:flex-end;">
-                            <button type="submit" class="btn btn-primary">تحليل الملف</button>
+                        <div class="upload-row">
+                            <div class="upload-zone" id="uploadZone"
+                                 onclick="document.getElementById('fileInput').click()">
+                                <div class="upload-zone-icon" id="uploadIcon">📤</div>
+                                <div class="upload-zone-text">
+                                    <div class="upload-title" id="uploadTitle">اسحب الملف هنا أو انقر للاختيار</div>
+                                    <div class="upload-sub"   id="fileName">PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت</div>
+                                </div>
+                                <input type="file" name="document" id="fileInput"
+                                       accept=".pdf,.jpg,.jpeg,.png" required
+                                       onchange="handleFileSelect(this)">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;">
+                                تحليل الملف
+                            </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- TABLE DES DOSSIERS -->
+                <!-- ── TABLE DES DOSSIERS ──────────────────────── -->
                 <div class="panel">
-                    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                    <div class="panel-header"
+                         style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                        <!-- Search -->
                         <div>
-                            <input type="text" id="tableSearch" placeholder="بحث..." oninput="filterDossierTable(this.value)"
-                                   style="padding:6px 10px;border:1px solid var(--border2);border-radius:6px;font-size:0.75rem;width:200px;">
+                            <input type="text" id="tableSearch" placeholder="بحث..."
+                                   oninput="filterDossierTable(this.value)"
+                                   style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:0.74rem;width:190px;">
                         </div>
-                        <div class="panel-title" style="flex:1; justify-content:center;">
+                        <!-- Title -->
+                        <div class="panel-title" style="flex:1;justify-content:center;">
                             <div class="panel-title-dot"></div>
                             قائمة الملفات
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <!-- Count + Add -->
+                        <div style="display:flex;align-items:center;gap:0.45rem;">
                             <span class="badge">{{ $dossiers->total() }} ملف</span>
                             <button type="button" class="btn btn-success btn-sm" onclick="openManualModal()">➕ إضافة يدوية</button>
                         </div>
@@ -255,11 +450,10 @@
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        <th>#</th>
                                         <th>رقم الملف</th>
                                         <th>الملف</th>
                                         <th>شركة التأمين</th>
-                                        <th>المبلغ الأصلي</th>
+                                        <th>المبلغ </th>
                                         <th>المبلغ المؤدى</th>
                                         <th>ملفات</th>
                                         <th>إجراءات</th>
@@ -268,130 +462,161 @@
                                 <tbody>
                                     @foreach($dossiers as $d)
                                     @php
-                                        // حساب المبلغ الأصلي المعروض باستخدام الـ Service
-                                            $montantOriginalCalcule = $calculService->getMontantOriginalCalcule($d);
-                                        @endphp
-                                        @php
-                                            $payload = [
-                                                'type_cas' => $d->type_cas,
-                                                'type_malaf' => $d->type_malaf,
-                                                'montant_initial' => (float) $d->montant_initial,
-                                                'montant_rasemal_ijmali' => (float) $d->montant_rasemal_ijmali,
-                                                'montant_taawidat_youmiya' => (float) $d->montant_taawidat_youmiya,
-                                                'masarif_janaza' => (float) $d->masarif_janaza,
-                                                'expertise' => (float) $d->expertise,
-                                                'beneficiaires_json' => $d->beneficiaires_json ?? [],
-                                            ];
-                                            $payloadAttr = json_encode($payload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-                                        @endphp
-                                        <tr id="row-{{ $d->id }}" class="dossier-row" data-search="{{ strtolower(($d->numero_dossier ?? '').' '.($d->nom_assurance_normalise ?? '').' '.($d->nom_assurance ?? '')) }}">
-                                            <td class="save-checkbox-cell">
-                                                <div class="save-checkbox-wrap">
-                                                    <input type="checkbox" class="custom-checkbox" id="chk-{{ $d->id }}"
+                                        $montantOriginalCalcule = $calculService->getMontantOriginalCalcule($d);
+                                      $payload = [
+                                                    'type_cas'                => $d->type_cas,
+                                                    'type_malaf'              => $d->type_malaf,
+                                                    'montant_initial'         => (float) $d->montant_initial,
+                                                    'montant_rasemal_ijmali'  => (float) $d->montant_rasemal_ijmali,
+                                                    'montant_taawidat_youmiya'=> (float) $d->montant_taawidat_youmiya,
+                                                    'masarif_janaza'          => (float) $d->masarif_janaza,
+                                                    'expertise'               => (float) $d->expertise,
+                                                    'beneficiaires_json'      => $d->beneficiaires_json ?? [],
+                                                    // ← ajouter
+                                                    'nizaat_darar'            => (float) ($d->nizaat_darar ?? 0),
+                                                    'nizaat_ikhtar'           => (float) ($d->nizaat_ikhtar ?? 0),
+                                                    'nizaat_otla'             => (float) ($d->nizaat_otla ?? 0),
+                                                    'nizaat_aqdamiya'         => (float) ($d->nizaat_aqdamiya ?? 0),
+                                                ];
+                                        $payloadAttr = json_encode($payload, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT);
+                                    @endphp
+                                    <tr id="row-{{ $d->id }}" class="dossier-row"
+                                        data-search="{{ strtolower(($d->numero_dossier??'').' '.($d->nom_assurance_normalise??'').' '.($d->nom_assurance??'')) }}">
+
+                                        <!-- checkbox save -->
+                                        <td class="save-checkbox-cell">
+                                            <div class="save-checkbox-wrap">
+                                                <input type="checkbox" class="custom-checkbox" id="chk-{{ $d->id }}"
+                                                       data-id="{{ $d->id }}"
+                                                       onchange="toggleSaveBtn(this.dataset.id, this.checked)"
+                                                       {{ $d->saved ? 'checked' : '' }}
+                                                       @if(!$d->calcul) disabled title="يجب إجراء الحساب أولاً" @endif>
+                                                <button type="button"
+                                                        class="save-btn-inline {{ $d->saved ? 'visible' : '' }}"
+                                                        id="savebtn-{{ $d->id }}"
                                                         data-id="{{ $d->id }}"
-                                                        onchange="toggleSaveBtn(this.dataset.id, this.checked)"
-                                                        {{ $d->saved ? 'checked' : '' }} @if(!$d->calcul) disabled title="يجب إجراء الحساب أولاً" @endif>
-                                                    <button type="button" class="save-btn-inline {{ $d->saved ? 'visible' : '' }}" 
-                                                            id="savebtn-{{ $d->id }}" 
-                                                            data-id="{{ $d->id }}"
-                                                            onclick="saveDossier(this.dataset.id)">💾</button>
-                                                </div>
-                                            </td>
-                                            <td style="color:var(--text3)">{{ $d->id }}</td>
-                                            <td>
-                                                <strong>{{ $d->numero_dossier ?: '—' }}</strong>
-                                                @if($d->date_jugement)
-                                                    <div style="font-size:0.7rem;color:var(--text3)">{{ $d->date_jugement->format('d/m/Y') }}</div>
-                                                @endif
-                                            </td>
-                                          <td style="max-width:140px;font-size:0.78rem;">
-                                                @if($d->fichier_pdf)
-                                                    <a href="{{ asset('storage/'.$d->fichier_pdf) }}" target="_blank"
-                                                    style="display:inline-flex;align-items:center;gap:0.3rem;color:var(--accent);text-decoration:none;">
-                                                        📄 ملف
-                                                    </a>
-                                                @else
-                                                    <span style="color:var(--text3)">—</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($d->nom_assurance_normalise)
-                                                    <span class="chip chip-blue">{{ $d->nom_assurance_normalise }}</span>
-                                                @else
-                                                    <span style="color:var(--text3)">—</span>
-                                                @endif
-                                            </td>
-                                            <td dir="ltr" style="text-align:right;">{{ number_format((float) $d->montant_initial, 2, '.', ',') }}</td>
-                                            <td>
-                                                @if($d->calcul)
-                                                    <button type="button" class="btn btn-ghost btn-sm" 
-                                                            data-id="{{ $d->id }}"
-                                                            onclick="openBreakdownServer(this.dataset.id)">
-                                                        <span dir="ltr">{{ number_format((float) $d->calcul->total, 2, '.', ',') }}</span>
-                                                    </button>
-                                                @elseif($d->type_cas)
-                                                    <button type="button" class="btn btn-ghost btn-sm" data-payload="{{ $payloadAttr }}" onclick="openBreakdownPreview(this)">معاينة</button>
-                                                @else
-                                                    —
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($d->calcul)
-                                                    <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.istidaa', $d) }}">استدعاء</a>
-                                                    <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.amr', $d) }}">أمر</a>
-                                                    
-                                                @else
-                                                    <span style="color:var(--text3)">—</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="actions-row">
-                                                    <button type="button" class="btn btn-primary btn-sm" 
-                                                            data-payload="{{ $payloadAttr }}" 
-                                                            data-id="{{ $d->id }}"
-                                                            onclick="openCalcModal(this.dataset.id, this)">تسجيل</button>
-                                                    <button type="button" class="btn btn-warning btn-sm" onclick="openEditModalFromButton(this)"
-                                                            data-id="{{ $d->id }}"
-                                                            data-numero_dossier="{{ e($d->numero_dossier) }}"
-                                                            data-numero_jugement="{{ e($d->numero_jugement) }}"
-                                                            data-date_jugement="{{ $d->date_jugement?->format('Y-m-d') }}"
-                                                            data-nom_victime="{{ e($d->nom_victime) }}"
-                                                            data-nom_assurance="{{ e($d->nom_assurance) }}"
-                                                            data-adresse_assurance="{{ e($d->adresse_assurance) }}"
-                                                            data-montant_initial="{{ $d->montant_initial }}"
-                                                            data-montant_rasemal_ijmali="{{ $d->montant_rasemal_ijmali }}"
-                                                            data-montant_taawidat_youmiya="{{ $d->montant_taawidat_youmiya }}"
-                                                            data-masarif_janaza="{{ $d->masarif_janaza }}"
-                                                            data-expertise="{{ $d->expertise }}"
-                                                            data-type_cas="{{ $d->type_cas }}"
-                                                            data-type_malaf="{{ e($d->type_malaf) }}"
-                                                            data-beneficiaires="{{ json_encode($d->beneficiaires_json ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}">✏️</button>
-                                                    <form method="post" action="{{ route('dossiers.destroy', $d) }}" onsubmit="return confirm('حذف هذا الملف؟');" style="display:inline;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                        onclick="saveDossier(this.dataset.id)">💾</button>
+                                            </div>
+                                        </td>
+
+                                       
+
+                                        <td>
+                                            <strong>{{ $d->numero_dossier ?: '—' }}</strong>
+                                            @if($d->date_jugement)
+                                                <div style="font-size:0.68rem;color:var(--text3);">{{ $d->date_jugement->format('d/m/Y') }}</div>
+                                            @endif
+                                        </td>
+
+                                        <td style="max-width:130px;font-size:0.77rem;">
+                                            @if($d->fichier_pdf)
+                                                <a href="{{ asset('storage/'.$d->fichier_pdf) }}" target="_blank"
+                                                   style="display:inline-flex;align-items:center;gap:0.28rem;color:var(--sky-dark);text-decoration:none;font-weight:600;">
+                                                    📄 ملف
+                                                </a>
+                                            @else
+                                                <span style="color:var(--text3);">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($d->nom_assurance_normalise)
+                                                <span class="chip chip-blue">{{ $d->nom_assurance_normalise }}</span>
+                                            @else
+                                                <span style="color:var(--text3);">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td dir="ltr" style="text-align:right;font-weight:600;">
+                                            {{ number_format((float)$d->montant_initial, 2, '.', ',') }}
+                                        </td>
+
+                                        <td>
+                                            @if($d->calcul)
+                                                <button type="button" class="btn btn-ghost btn-sm"
+                                                        data-id="{{ $d->id }}"
+                                                        onclick="openBreakdownServer(this.dataset.id)">
+                                                    <span dir="ltr">{{ number_format((float)$d->calcul->total, 2, '.', ',') }}</span>
+                                                </button>
+                                            @elseif($d->type_cas)
+                                                <button type="button" class="btn btn-ghost btn-sm"
+                                                        data-payload="{{ $payloadAttr }}"
+                                                        onclick="openBreakdownPreview(this)">معاينة</button>
+                                            @else
+                                                <span style="color:var(--text3);">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($d->calcul)
+                                                <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.istidaa', $d) }}">استدعاء</a>
+                                                <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.amr', $d) }}">أمر</a>
+                                            @else
+                                                <span style="color:var(--text3);">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <div class="actions-row">
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                        data-payload="{{ $payloadAttr }}"
+                                                        data-id="{{ $d->id }}"
+                                                        onclick="openCalcModal(this.dataset.id, this)">تسجيل</button>
+
+                                                <button type="button" class="btn btn-warning btn-sm"
+                                                        onclick="openEditModalFromButton(this)"
+                                                        data-id="{{ $d->id }}"
+                                                        data-numero_dossier="{{ e($d->numero_dossier) }}"
+                                                        data-numero_jugement="{{ e($d->numero_jugement) }}"
+                                                        data-date_jugement="{{ $d->date_jugement?->format('Y-m-d') }}"
+                                                        data-nom_victime="{{ e($d->nom_victime) }}"
+                                                        data-nom_assurance="{{ e($d->nom_assurance) }}"
+                                                        data-adresse_assurance="{{ e($d->adresse_assurance) }}"
+                                                        data-montant_initial="{{ $d->montant_initial }}"
+                                                        data-montant_rasemal_ijmali="{{ $d->montant_rasemal_ijmali }}"
+                                                        data-montant_taawidat_youmiya="{{ $d->montant_taawidat_youmiya }}"
+                                                        data-masarif_janaza="{{ $d->masarif_janaza }}"
+                                                        data-expertise="{{ $d->expertise }}"
+                                                        data-type_cas="{{ $d->type_cas }}"
+                                                        data-type_malaf="{{ e($d->type_malaf) }}"
+                                                        data-montant_taawidat="{{ $d->montant_taawidat ?? 0 }}"
+                                                        data-montant_masarif_tibiya="{{ $d->montant_masarif_tibiya ?? 0 }}"
+                                                        data-beneficiaires="{{ json_encode($d->beneficiaires_json??[], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) }}">✏️</button>
+
+                                                <form method="post" action="{{ route('dossiers.destroy', $d) }}"
+                                                      onsubmit="return confirm('حذف هذا الملف؟');" style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
+                             </table>
                         </div>
+
                         @if($dossiers->hasPages())
                             <div class="pagination">
-                                @if($dossiers->onFirstPage()) <span>السابق</span>
-                                @else <a href="{{ $dossiers->previousPageUrl() }}">السابق</a> @endif
+                                @if($dossiers->onFirstPage())
+                                    <span>السابق</span>
+                                @else
+                                    <a href="{{ $dossiers->previousPageUrl() }}">السابق</a>
+                                @endif
                                 <span>صفحة {{ $dossiers->currentPage() }} / {{ $dossiers->lastPage() }}</span>
-                                @if($dossiers->hasMorePages()) <a href="{{ $dossiers->nextPageUrl() }}">التالي</a>
-                                @else <span>التالي</span> @endif
+                                @if($dossiers->hasMorePages())
+                                    <a href="{{ $dossiers->nextPageUrl() }}">التالي</a>
+                                @else
+                                    <span>التالي</span>
+                                @endif
                             </div>
                         @endif
                     @endif
                 </div>
 
-                <p style="text-align:center;color:var(--text3);font-size:0.8rem;padding:0 1rem 1rem;">
-                    لإضافة ملف يدوياً استخدم زر <strong>إضافة يدوية</strong> أعلى الجدول.
+                <p style="text-align:center;color:var(--text3);font-size:0.75rem;padding:0 1rem 0.75rem;">
+                    لإضافة ملف يدوياً استخدم زر <strong style="color:var(--brown);">إضافة يدوية</strong> أعلى الجدول.
                 </p>
 
             </div><!-- /panels-grid -->
@@ -399,28 +624,31 @@
     </main>
 </div>
 
-<!-- تفاصيل المبلغ المؤدى -->
+<!-- ═══ MODAL — تفاصيل المبلغ المؤدى ═══════════════════════ -->
 <div class="modal-overlay" id="breakdownModal">
-    <div class="modal" style="max-width:420px;">
+    <div class="modal" style="max-width:400px;">
         <div class="modal-header">
             <div class="modal-title">تفاصيل المبلغ المؤدى</div>
-            <button type="button" class="modal-close" onclick="document.getElementById('breakdownModal').classList.remove('open')">✕</button>
+            <button type="button" class="modal-close"
+                    onclick="document.getElementById('breakdownModal').classList.remove('open')">✕</button>
         </div>
-        <table style="width:100%;font-size:0.85rem;">
+        <table style="width:100%;font-size:0.83rem;">
             <tbody id="breakdownBody"></tbody>
-        </table>
+         </table>
         <div class="modal-actions">
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('breakdownModal').classList.remove('open')">إغلاق</button>
+            <button type="button" class="btn btn-primary"
+                    onclick="document.getElementById('breakdownModal').classList.remove('open')">إغلاق</button>
         </div>
     </div>
 </div>
 
-<!-- حساب -->
+<!-- ═══ MODAL — حساب ════════════════════════════════════════ -->
 <div class="modal-overlay" id="calcModal">
-    <div class="modal" style="max-width:520px;">
+    <div class="modal" style="max-width:550px;">
         <div class="modal-header">
             <div class="modal-title">إعداد الحساب</div>
-            <button type="button" class="modal-close" onclick="document.getElementById('calcModal').classList.remove('open')">✕</button>
+            <button type="button" class="modal-close"
+                    onclick="document.getElementById('calcModal').classList.remove('open')">✕</button>
         </div>
         <form id="calcForm" method="post" action="">
             @csrf
@@ -434,17 +662,29 @@
                         <option value="gharama_ijbariya">غرامة إجبارية</option>
                         <option value="wafaya_irad_omri">وفاة — إيراد عمري (مستفيدون)</option>
                         <option value="wafaya_ras_mal">وفاة — رأس مال (مستفيدون)</option>
-                        <option value="autre">أخرى</option>
                     </select>
                 </div>
                 <div class="form-group full">
                     <label>وصف الملف (اختياري)</label>
                     <input type="text" name="type_malaf" id="calc_type_malaf" placeholder="يظهر في عمود الملف">
                 </div>
+                
+                <!-- SECTION: المبلغ الأصلي + التعويضات + المصاريف الطبية -->
+                <div class="section-divider"><span>💰 تفاصيل المبلغ الأساسي</span></div>
+                
                 <div class="form-group">
                     <label>المبلغ الأصلي</label>
                     <input type="number" step="0.01" min="0" name="montant_initial" id="calc_montant_initial" oninput="updateCalcPreview()">
                 </div>
+                <div class="form-group">
+                    <label>التعويضات</label>
+                    <input type="number" step="0.01" min="0" name="montant_taawidat" id="calc_montant_taawidat" value="0" oninput="updateCalcPreview()">
+                </div>
+                <div class="form-group">
+                    <label>المصاريف الطبية</label>
+                    <input type="number" step="0.01" min="0" name="montant_masarif_tibiya" id="calc_montant_masarif_tibiya" value="0" oninput="updateCalcPreview()">
+                </div>
+                
                 <div class="form-group">
                     <label>الخبرة</label>
                     <input type="number" step="0.01" min="0" name="expertise" id="calc_expertise" oninput="updateCalcPreview()">
@@ -467,9 +707,12 @@
                     <button type="button" class="btn btn-ghost btn-sm" onclick="addCalcBenefRow('')">+ مستفيد</button>
                 </div>
             </div>
-            <p style="font-size:0.75rem;color:var(--text3);margin:0.5rem 0;">معاينة: <strong id="calcPreviewTotal">—</strong> درهم</p>
+            <p style="font-size:0.72rem;color:var(--text3);margin:0.5rem 0;">
+                معاينة: <strong id="calcPreviewTotal" style="color:var(--sky-dark);">—</strong> درهم
+            </p>
             <div class="modal-actions">
-                <button type="button" class="btn btn-ghost" onclick="document.getElementById('calcModal').classList.remove('open')">إلغاء</button>
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('calcModal').classList.remove('open')">إلغاء</button>
                 <button type="button" class="btn btn-ghost" onclick="previewCalcFromForm()">تفاصيل</button>
                 <button type="submit" class="btn btn-primary">حفظ الحساب</button>
             </div>
@@ -477,110 +720,188 @@
     </div>
 </div>
 
-<!-- إضافة يدوية -->
-<!-- إضافة يدوية -->
+<!-- ═══ MODAL — إضافة يدوية ══════════════════════════════════ -->
 <div class="modal-overlay" id="manualModal">
-    <div class="modal" style="max-width:540px;">
+    <div class="modal" style="max-width:560px;">
         <div class="modal-header">
-            <div class="modal-title">إضافة ملف يدوياً</div>
-            <button type="button" class="modal-close" onclick="document.getElementById('manualModal').classList.remove('open')">✕</button>
+            <div class="modal-title">➕ إضافة ملف يدوياً</div>
+            <button type="button" class="modal-close"
+                    onclick="document.getElementById('manualModal').classList.remove('open')">✕</button>
         </div>
         <form method="post" action="{{ route('manual.store') }}">
             @csrf
-            <div class="modal-form-grid">
-                <div class="form-group"><label>رقم الملف</label><input type="text" name="numero_dossier"></div>
-                <div class="form-group"><label>رقم الحكم</label><input type="text" name="numero_jugement"></div>
-                <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement"></div>
-                <div class="form-group">
-                    <label>شركة التأمين</label>
-                    <select name="nom_assurance" id="manual_nom_assurance">
-                        <option value="">— اختر شركة التأمين —</option>
-                        <option value="شركة التامين التعاضدية الفلاحية">شركة التامين التعاضدية الفلاحية</option>
-                        <option value="شركة التأمين أكسا">شركة التأمين أكسا</option>
-                        <option value="شركة التأمين الملكية">شركة التأمين الملكية</option>
-                        <option value="شركة التأمين النقل">شركة التأمين النقل</option>
-                        <option value="شركة التأمين الوفاء">شركة التأمين الوفاء</option>
-                        <option value="شركة التأمين اليانز">شركة التأمين اليانز</option>
-                        <option value="شركة التأمين سند">شركة التأمين سند</option>
-                        <option value="شركة التأمين سنلام">شركة التأمين سنلام</option>
-                        <option value="شركة التأمين أطلنطا">شركة التأمين أطلنطا</option>
-                        <option value="شركة التامين التعاضدية المركزية">شركة التامين التعاضدية المركزية</option>
-                        <option value="شركة التأمين أرباب النقل">شركة التأمين أرباب النقل</option>
-                        <option value="autre">أخرى</option>
-                    </select>
-                </div>
-                <div class="form-group full" id="wrap_autre_assurance_manual" style="display:none">
-                    <label>اسم الشركة (أخرى)</label>
-                    <input type="text" name="nom_assurance_autre" placeholder="أدخل اسم شركة التأمين">
-                </div>
-                <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance"></div>
 
-                <!-- نوع الحالة — يظهر مبكراً لأنه يتحكم في باقي الحقول -->
-                <div class="form-group full">
-                    <label>نوع الحالة</label>
-                    <select name="type_cas" id="manual_type_cas" onchange="onManualTypeCasChange()">
-                        <option value="">—</option>
-                        <option value="irad_omri">إيراد عمري</option>
-                        <option value="irad_omri_ras_mal">رأس مال</option>
-                        <option value="masdar_total_taawidat">رأسمال + تعويضات</option>
-                        <option value="gharama_ijbariya">غرامة إجبارية</option>
-                        <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
-                        <option value="wafaya_ras_mal">وفاة — رأس مال</option>
-                        <option value="autre">أخرى</option>
-                    </select>
+            <!-- ══ SECTION 1 : المعلومات الأساسية ══ -->
+            <div style="background:var(--brown-soft);border:1px solid var(--brown-light);border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--brown);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+                    <span>🗂️</span> المعلومات الأساسية
                 </div>
-
-                <!-- حقول المبالغ العادية (تُخفى عند وفاة) -->
-                <div class="form-group" id="wrap_manual_montant_initial">
-                    <label>المبلغ الأصلي</label>
-                    <input type="number" step="0.01" min="0" name="montant_initial" id="manual_montant_initial" value="0" oninput="updateManualTotal()">
+                <div class="modal-form-grid">
+                    <div class="form-group">
+                        <label>رقم الملف</label>
+                        <input type="text" name="numero_dossier" placeholder="2023/1502/430" >
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ القرار</label>
+                        <input type="date" name="date_jugement">
+                    </div>
+                    <div class="form-group">
+                        <label>شركة المشغِّلة</label>
+                        <input type="text" name="numero_jugement" placeholder="OCP ">
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الحالة</label>
+                        <select name="type_cas" id="manual_type_cas" onchange="onManualTypeCasChange()">
+                            <option value="">—</option>
+                            <option value="irad_omri">إيراد عمري</option>
+                            <option value="irad_omri_ras_mal">رأس مال</option>
+                            <option value="masdar_total_taawidat">رأسمال + تعويضات</option>
+                            <option value="gharama_ijbariya">غرامة إجبارية</option>
+                            <option value="nizaat_shughl">نزاعات الشغل</option>
+                            <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
+                            <option value="wafaya_ras_mal">وفاة — رأس مال</option>
+                        </select>
+                    </div>
+                    <!-- شركة التأمين -->
+                    <div class="form-group">
+                        <label>شركة التأمين</label>
+                        <select name="nom_assurance" id="manual_nom_assurance" onchange="onAssuranceChange()">
+                            <option value="">— اختر شركة التأمين —</option>
+                            <option value="شركة التامين التعاضدية الفلاحية المغربية">شركة التامين التعاضدية الفلاحية المغربية</option>
+                            <option value="شركة التامين التعاضدية المركزية المغربية">شركة التامين التعاضدية المركزية المغربية</option>
+                            <option value="المكتب المركزي المغربي">المكتب المركزي المغربي</option>
+                            <option value="التأمينات لأرباب النقل">التأمينات لأرباب النقل</option>
+                            <option value="شركة التأمين أكسا">شركة التأمين أكسا</option>
+                            <option value="شركة التامين الملكية الوطنية للتأمين">شركة التامين الملكية الوطنية للتأمين</option>
+                            <option value="شركة التأمين النقل">شركة التأمين النقل</option>
+                            <option value="شركة التامين الوفاء">شركة التامين الوفاء</option>
+                            <option value="شركة التامين اليانز">شركة التامين اليانز</option>
+                            <option value="شركة التأمين سند">شركة التأمين سند</option>
+                            <option value="شركة التامين سنلام المغرب">شركة التامين سنلام المغرب</option>
+                            <option value="شركة التامين اطلنطا سند">شركة التامين اطلنطا سند</option>
+                            <option value="autre">➕ شركة أخرى (إضافة جديدة)</option>
+                        </select>
+                    </div>
+                    <!-- Nouvelle entreprise -->
+                    <div class="form-group" id="wrap_autre_nom" style="display:none">
+                        <label>اسم الشركة الجديدة</label>
+                        <input type="text" id="manual_nom_assurance_autre" placeholder="أدخل اسم الشركة"
+                               oninput="previewCustomAssurance()">
+                    </div>
+                    <!-- Adresse auto-remplie ou saisie -->
+                    <div class="form-group full">
+                        <label>عنوان الشركة</label>
+                        <input type="text" name="adresse_assurance" id="manual_adresse_assurance"
+                               placeholder="يُملأ تلقائياً عند اختيار الشركة">
+                    </div>
                 </div>
-                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" min="0" name="expertise" value="0"></div>
-                <div class="form-group" id="wrap_manual_rasemal">
-                    <label>مصاريف العلاج</label>
-                    <input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="manual_rasemal" value="0" oninput="updateManualTotal()">
-                </div>
-                <div class="form-group" id="wrap_manual_taawidat">
-                    <label>تعويضات يومية</label>
-                    <input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" id="manual_taawidat" value="0" oninput="updateManualTotal()">
-                </div>
-
-                <!-- صندوق المجموع التلقائي (يظهر عند وجود علاج أو تعويضات أو وفاة) -->
-                <div class="form-group full" id="wrap_manual_total_preview" style="display:none">
-                    <label>💰 المبلغ الإجمالي للحساب</label>
-                    <input type="number" step="0.01" name="montant_calcul_total" id="manual_total_preview"
-                           style="background:rgba(123,79,44,0.08);border-color:var(--accent);font-weight:700;font-size:1rem;color:var(--accent);"
-                           readonly>
-                    <span style="font-size:0.7rem;color:var(--text3);margin-top:2px;" id="manual_total_formula"></span>
-                </div>
-
-                <!-- مصاريف الجنازة (وفاة فقط) -->
-                <div class="form-group full" id="wrap_manual_janaza" style="display:none">
-                    <label>مصاريف الجنازة</label>
-                    <input type="number" step="0.01" min="0" name="masarif_janaza" value="0">
-                </div>
-
-                <!-- قائمة المستفيدين (وفاة فقط) -->
-                <div class="form-group full" id="wrap_manual_benef" style="display:none">
-                    <label id="manual_benef_label">مبالغ المستفيدين</label>
-                    <div id="manual_benef_list"></div>
-                    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.4rem;" onclick="addManualBenefRow()">＋ مستفيد</button>
-                </div>
-
-                <div class="form-group full"><label>وصف الملف</label><input type="text" name="type_malaf"></div>
-                <div class="form-group full"><label>اسم المصاب</label><input type="text" name="nom_victime"></div>
             </div>
+
+           <!-- ══ SECTION 2 : تفاصيل المبالغ ══ -->
+<div style="background:var(--sky-soft);border:1px solid var(--sky);border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+    <div style="font-size:0.72rem;font-weight:700;color:var(--sky-dark);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+        <span>💰</span> تفاصيل المبلغ المؤدى
+    </div>
+    <div class="modal-form-grid">
+        <div class="form-group" id="wrap_manual_montant_initial">
+            <label>المبلغ</label>
+            <input type="number" step="0.01" min="0" name="montant" id="manual_montant" placeholder="203900 درهم" oninput="updateManualTotal()">
+        </div>
+        <div class="form-group" id="wrap_manual_taawidat">
+            <label>تعويضات يومية</label>
+            <input type="number" step="0.01" min="0" name="montant_taawidat" id="manual_montant_taawidat" placeholder="4900 درهم" oninput="updateManualTotal()">
+        </div>
+        <div class="form-group" id="wrap_manual_masarif">
+            <label>المصاريف الطبية</label>
+            <input type="number" step="0.01" min="0" name="montant_masarif_tibiya" id="manual_montant_masarif_tibiya" placeholder="13900 درهم" oninput="updateManualTotal()">
+        </div>
+        <div class="form-group" id="wrap_manual_expertise">
+            <label>الخبرة</label>
+            <input type="number" name="expertise" placeholder="200 درهم">
+        </div>
+        <div class="form-group full" id="wrap_manual_janaza" style="display:none">
+            <label>مصاريف الجنازة</label>
+            <input type="number" step="0.01" min="0" name="masarif_janaza" value="0">
+        </div>
+        <div class="form-group full" id="wrap_manual_benef" style="display:none">
+            <label id="manual_benef_label">مبالغ المستفيدين</label>
+            <div id="manual_benef_list"></div>
+            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.4rem;" onclick="addManualBenefRow()">＋ مستفيد</button>
+        </div>
+
+        <!-- نزاعات الشغل fields -->
+        <div class="form-group full" id="wrap_manual_nizaat" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.5rem;">
+                <div class="form-group">
+                    <label>الضرر</label>
+                    <input type="number" step="0.01" min="0" id="nizaat_darar" name="nizaat_darar" value="0" oninput="updateNizaatTotal()">
+                </div>
+                <div class="form-group">
+                    <label>الإخطار</label>
+                    <input type="number" step="0.01" min="0" id="nizaat_ikhtar" name="nizaat_ikhtar" value="0" oninput="updateNizaatTotal()">
+                </div>
+                <div class="form-group">
+                    <label>العطلة السنوية</label>
+                    <input type="number" step="0.01" min="0" id="nizaat_otla" name="nizaat_otla" value="0" oninput="updateNizaatTotal()">
+                </div>
+                <div class="form-group">
+                    <label>الأقدمية</label>
+                    <input type="number" step="0.01" min="0" id="nizaat_aqdamiya" name="nizaat_aqdamiya" value="0" oninput="updateNizaatTotal()">
+                </div>
+            </div>
+            <div style="padding:0.5rem 0.75rem;background:#fff;border:1px solid var(--sky);border-radius:7px;font-size:0.8rem;color:var(--sky-dark);">
+                مجموع نزاعات الشغل: <strong id="nizaat_sum_preview">0.00</strong> درهم
+            </div>
+        </div>
+
+        <div class="form-group full" id="wrap_manual_total_preview" style="display:none">
+            <label>💰 المبلغ الإجمالي</label>
+            <input type="number" step="0.01" name="montant_calcul_total" id="manual_total_preview"
+                   style="background:#fff;border-color:var(--sky);font-weight:700;font-size:1rem;color:var(--sky-dark);" readonly>
+            <span style="font-size:0.68rem;color:var(--text3);margin-top:2px;" id="manual_total_formula"></span>
+        </div>
+    </div>
+</div>
+            <!-- ══ SECTION 3 : المعلومات الشخصية ══ -->
+            <div style="background:var(--success-soft);border:1px solid #C0DD97;border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--success);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+                    <span>👤</span> المعلومات الشخصية
+                </div>
+                <div class="modal-form-grid">
+                    <div class="form-group">
+                        <label>اسم المصاب</label>
+                        <input type="text" name="nom_victime">
+                    </div>
+                    <div class="form-group">
+                        <label>الساكن (ة) ب</label>
+                        <input type="text" name="Adres_victime">
+                    </div>
+                    <div class="form-group full">
+                        <label>النائب عنه (ا)</label>
+                        <input type="text" name="Avocat">
+                    </div>
+                    <div class="form-group full">
+                        <label>وصف الملف</label>
+                        <input type="text" name="type_malaf" placeholder="يظهر في عمود الملف">
+                    </div>
+                </div>
+            </div>
+
+            <!-- hidden field for custom company name -->
+            <input type="hidden" name="nom_assurance_custom" id="manual_nom_assurance_custom">
+            <input type="hidden" name="montant_initial" id="nizaat_montant_hidden"> 
+
             <div class="modal-actions">
-                <button type="button" class="btn btn-ghost" onclick="document.getElementById('manualModal').classList.remove('open')">إلغاء</button>
-                <button type="submit" class="btn btn-success">تسجيل</button>
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('manualModal').classList.remove('open')">إلغاء</button>
+                <button type="submit" class="btn btn-success">✅ تسجيل</button>
             </div>
         </form>
     </div>
 </div>
-
-<!-- تعديل الملف -->
+<!-- ═══ MODAL — تعديل الملف ══════════════════════════════════ -->
 <div class="modal-overlay" id="editModal">
-    <div class="modal">
+    <div class="modal" style="max-width:580px;">
         <div class="modal-header">
             <div class="modal-title">✏️ تعديل الملف</div>
             <button class="modal-close" onclick="closeEditModal()">✕</button>
@@ -594,7 +915,14 @@
                 <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement" id="edit_date_jugement"></div>
                 <div class="form-group"><label>اسم المصاب</label><input type="text" name="nom_victime" id="edit_nom_victime"></div>
                 <div class="form-group"><label>شركة التأمين</label><input type="text" name="nom_assurance" id="edit_nom_assurance"></div>
+                
+                <!-- SECTION: المبلغ الأصلي + التعويضات + المصاريف الطبية -->
+                <div class="section-divider"><span>💰 تفاصيل المبلغ الأساسي</span></div>
+                
                 <div class="form-group"><label>المبلغ الأصلي</label><input type="number" step="0.01" name="montant_initial" id="edit_montant_initial"></div>
+                <div class="form-group"><label>التعويضات</label><input type="number" step="0.01" name="montant_taawidat" id="edit_montant_taawidat" value="0"></div>
+                <div class="form-group"><label>المصاريف الطبية</label><input type="number" step="0.01" name="montant_masarif_tibiya" id="edit_montant_masarif_tibiya" value="0"></div>
+                
                 <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" name="expertise" id="edit_expertise"></div>
                 <div class="form-group">
                     <label>نوع الحالة</label>
@@ -606,7 +934,6 @@
                         <option value="gharama_ijbariya">غرامة إجبارية</option>
                         <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
                         <option value="wafaya_ras_mal">وفاة — رأس مال</option>
-                        <option value="autre">أخرى</option>
                     </select>
                 </div>
                 <div class="form-group full"><label>وصف الملف</label><input type="text" name="type_malaf" id="edit_type_malaf"></div>
@@ -628,328 +955,466 @@
     </div>
 </div>
 
-
+<!-- ═══ SCRIPTS ═══════════════════════════════════════════════ -->
 <script src="{{ asset('js/dossier-calc.js') }}"></script>
-
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 const BASE = "{{ url('/') }}";
 
+/* ── Table search ── */
 function filterDossierTable(q) {
     q = (q || '').toLowerCase().trim();
-    document.querySelectorAll('.dossier-row').forEach(function (tr) {
-        const hay = (tr.getAttribute('data-search') || '');
+    document.querySelectorAll('.dossier-row').forEach(function(tr) {
+        var hay = (tr.getAttribute('data-search') || '');
         tr.style.display = !q || hay.includes(q) ? '' : 'none';
     });
 }
 
+/* ── Format ── */
 function fmt(n) { return (Math.round(parseFloat(n) * 100) / 100).toFixed(2); }
 
+/* ── Breakdown table ── */
 function fillBreakdownTable(b) {
-    const tb = document.getElementById('breakdownBody');
-    const rows = [
-        ['المبلغ الأصلي', b.montant_original],
-        //['الأساس للرسم القضائي', b.montant_pour_rasm],
-        ['الرسم القضائي', b.rasm_qadai],
-        ['حقوق المرافعة', b.rusum_murafaa],
-        ['رسم البحث', b.rasm_bahth],
-        ['الخبرة', b.expertise],
-        ['مصاريف الجنازة', b.masarif_janaza],
-        ['المجموع', b.total],
-    ];
-    tb.innerHTML = rows.map(function (r) {
-        return '<tr><th style="text-align:right;padding:0.35rem">' + r[0] + '</th><td style="text-align:left">' + fmt(r[1]) + '</td></tr>';
+    var tb = document.getElementById('breakdownBody');
+    var rows;
+    
+    if (b.type_cas === 'nizaat_shughl') {
+        rows = [
+            ['الضرر',           b.nizaat_darar    || 0],
+            ['الإخطار',         b.nizaat_ikhtar   || 0],
+            ['العطلة السنوية',  b.nizaat_otla     || 0],
+            ['الأقدمية',        b.nizaat_aqdamiya || 0],
+            ['المجموع',         b.montant_original],
+            ['الرسم القضائي',   b.rasm_qadai],
+            ['حقوق المرافعة',   b.rusum_murafaa],
+            ['رسم البحث',       b.rasm_bahth],
+            ['المبلغ المؤدى',   b.total],
+        ];
+    } else {
+        rows = [
+            ['المبلغ',           b.montant],
+            ['التعويضات',        b.montant_taawidat || 0],
+            ['المصاريف الطبية',  b.montant_masarif_tibiya || 0],
+            ['مصاريف الجنازة',  b.masarif_janaza],
+            ['المجموع',          b.montant_original],
+            ['الرسم القضائي',    b.rasm_qadai],
+            ['حقوق المرافعة',   b.rusum_murafaa],
+            ['رسم البحث',        b.rasm_bahth],
+            ['الخبرة',           b.expertise],
+            ['المبلغ المؤدى',    b.total],
+        ];
+    }
+
+    tb.innerHTML = rows.map(function(r) {
+        var isTotal  = r[0] === 'المبلغ المؤدى';
+        var isMajmou = r[0] === 'المجموع';
+        var bordered = isTotal || isMajmou;
+        return '<tr style="' + (bordered ? 'border-top:2px solid var(--brown-light);border-bottom:2px solid var(--brown-light);font-weight:700;' : '') + '">'
+            + '<th style="text-align:right;padding:0.38rem 0.5rem;color:var(--text2);">' + r[0] + '</th>'
+            + '<td style="text-align:left;padding:0.38rem 0.5rem;color:' + (isTotal ? 'var(--sky-dark)' : 'var(--text)') + ';">' + fmt(r[1]) + '</td>'
+            + '</tr>';
     }).join('');
 }
-
 function openBreakdownPreview(btn) {
     if (!window.DossierCalc) return;
     var payload = JSON.parse(btn.getAttribute('data-payload'));
+    // enrich payload with new fields if needed
+    payload.montant_taawidat = payload.montant_taawidat || 0;
+    payload.montant_masarif_tibiya = payload.montant_masarif_tibiya || 0;
     fillBreakdownTable(window.DossierCalc.buildBreakdown(payload));
     document.getElementById('breakdownModal').classList.add('open');
 }
-
 function openBreakdownServer(id) {
     fetch(BASE + '/dossiers/' + id + '/breakdown', { headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.json(); })
-        .then(function (b) { fillBreakdownTable(b); document.getElementById('breakdownModal').classList.add('open'); });
+        .then(function(r) { return r.json(); })
+        .then(function(b) { fillBreakdownTable(b); document.getElementById('breakdownModal').classList.add('open'); });
 }
 
+/* ── File select feedback ── */
 function handleFileSelect(input) {
-    const file = input.files[0];
-    const zone = document.getElementById('uploadZone');
-    const icon = document.getElementById('uploadIcon');
-    const title = document.getElementById('uploadTitle');
-    const sub = document.getElementById('fileName');
-
+    var file  = input.files[0];
+    var zone  = document.getElementById('uploadZone');
+    var icon  = document.getElementById('uploadIcon');
+    var title = document.getElementById('uploadTitle');
+    var sub   = document.getElementById('fileName');
     if (file) {
-        // Affichage du feedback
-        zone.style.borderColor = 'var(--success)';
-        zone.style.background = 'rgba(34,197,94,0.08)';
-        icon.textContent = '✅';
-        title.textContent = file.name;
-        title.style.color = 'var(--success)';
-        // Taille du fichier
-        const size = file.size < 1024 * 1024
-            ? (file.size / 1024).toFixed(1) + ' KB'
-            : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        zone.style.borderColor = 'var(--sky)';
+        zone.style.background  = 'var(--sky-soft)';
+        icon.textContent       = '✅';
+        title.textContent      = file.name;
+        title.style.color      = 'var(--sky-dark)';
+        var size = file.size < 1024*1024
+            ? (file.size/1024).toFixed(1) + ' KB'
+            : (file.size/(1024*1024)).toFixed(1) + ' MB';
         sub.textContent = '📎 ' + size + ' — جاهز للتحليل';
-        sub.style.color = 'var(--success)';
+        sub.style.color = 'var(--sky-dark)';
     } else {
-        // Reset
-        zone.style.borderColor = '';
-        zone.style.background = '';
-        icon.textContent = '📤';
-        title.textContent = 'اسحب الملف هنا أو انقر للاختيار';
-        title.style.color = '';
-        sub.textContent = 'PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت';
-        sub.style.color = '';
+        zone.style.borderColor = ''; zone.style.background = '';
+        icon.textContent = '📤'; title.textContent = 'اسحب الملف هنا أو انقر للاختيار';
+        title.style.color = ''; sub.textContent = 'PDF أو JPG أو PNG — بحد أقصى 80 ميغابايت'; sub.style.color = '';
     }
 }
-function clearCalcBenefList() { var box = document.getElementById('calc_benef_list'); if (box) box.innerHTML = ''; }
 
+/* ── Calc modal helpers ── */
+function clearCalcBenefList() { var b = document.getElementById('calc_benef_list'); if(b) b.innerHTML=''; }
 function addCalcBenefRow(val) {
-    val = val === undefined || val === null ? '' : val;
-    var box = document.getElementById('calc_benef_list');
-    if (!box) return;
-    var d = document.createElement('div');
-    d.style.marginBottom = '0.35rem';
-    d.innerHTML = '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="' + String(val).replace(/"/g, '&quot;') + '" oninput="updateCalcPreview()">';
+    val = val==null ? '' : val;
+    var box = document.getElementById('calc_benef_list'); if(!box) return;
+    var d = document.createElement('div'); d.style.marginBottom='0.3rem';
+    d.innerHTML = '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="'
+        + String(val).replace(/"/g,'&quot;') + '" oninput="updateCalcPreview()">';
     box.appendChild(d);
 }
-
 function toggleCalcExtra() {
-    const t = document.getElementById('calc_type_cas').value;
-    document.getElementById('wrap_rasemal').style.display = t === 'masdar_total_taawidat' ? '' : 'none';
-    document.getElementById('wrap_taawidat').style.display = t === 'masdar_total_taawidat' ? '' : 'none';
-    const waf = t === 'wafaya_irad_omri' || t === 'wafaya_ras_mal';
+    var t = document.getElementById('calc_type_cas').value;
+    document.getElementById('wrap_rasemal').style.display  = t==='masdar_total_taawidat' ? '' : 'none';
+    document.getElementById('wrap_taawidat').style.display = t==='masdar_total_taawidat' ? '' : 'none';
+    var waf = t==='wafaya_irad_omri'||t==='wafaya_ras_mal';
     document.getElementById('wrap_janaza').style.display = waf ? '' : 'none';
-    document.getElementById('wrap_benef').style.display = waf ? '' : 'none';
+    document.getElementById('wrap_benef').style.display  = waf ? '' : 'none';
     if (!waf) { clearCalcBenefList(); }
-    else if (document.getElementById('calc_benef_list').children.length === 0) { addCalcBenefRow(''); addCalcBenefRow(''); }
+    else if (document.getElementById('calc_benef_list').children.length===0) { addCalcBenefRow(''); addCalcBenefRow(''); }
     updateCalcPreview();
 }
-
 function readCalcPayloadFromForm() {
-    var ben = [];
-    document.querySelectorAll('#calc_benef_list input[name^="beneficiaires"]').forEach(function (inp) {
-        ben.push({ montant: parseFloat(inp.value) || 0 });
-    });
+    var ben=[];
+    document.querySelectorAll('#calc_benef_list input[name^="beneficiaires"]').forEach(function(i){ ben.push({montant:parseFloat(i.value)||0}); });
     return {
         type_cas: document.getElementById('calc_type_cas').value,
-        montant_initial: parseFloat(document.getElementById('calc_montant_initial').value) || 0,
-        montant_rasemal_ijmali: parseFloat(document.getElementById('calc_montant_rasemal_ijmali').value) || 0,
-        montant_taawidat_youmiya: parseFloat(document.getElementById('calc_montant_taawidat_youmiya').value) || 0,
-        masarif_janaza: parseFloat(document.getElementById('calc_masarif_janaza').value) || 0,
-        expertise: parseFloat(document.getElementById('calc_expertise').value) || 0,
+        montant_initial: parseFloat(document.getElementById('calc_montant_initial').value)||0,
+        montant_taawidat: parseFloat(document.getElementById('calc_montant_taawidat').value)||0,
+        montant_masarif_tibiya: parseFloat(document.getElementById('calc_montant_masarif_tibiya').value)||0,
+        montant_rasemal_ijmali: parseFloat(document.getElementById('calc_montant_rasemal_ijmali').value)||0,
+        montant_taawidat_youmiya: parseFloat(document.getElementById('calc_montant_taawidat_youmiya').value)||0,
+        masarif_janaza: parseFloat(document.getElementById('calc_masarif_janaza').value)||0,
+        expertise: parseFloat(document.getElementById('calc_expertise').value)||0,
         beneficiaires_json: ben,
     };
 }
-
 function updateCalcPreview() {
     if (!window.DossierCalc) return;
-    var b = window.DossierCalc.buildBreakdown(readCalcPayloadFromForm());
-    document.getElementById('calcPreviewTotal').textContent = fmt(b.total);
+    document.getElementById('calcPreviewTotal').textContent = fmt(window.DossierCalc.buildBreakdown(readCalcPayloadFromForm()).total);
 }
-
 function openCalcModal(id, el) {
     id = parseInt(id);
-    var payload = JSON.parse(el.getAttribute('data-payload') || '{}');
-    document.getElementById('calcForm').action = BASE + '/calculate/' + id;
-    document.getElementById('calc_type_cas').value = payload.type_cas || 'autre';
-    document.getElementById('calc_montant_initial').value = payload.montant_initial ?? '';
-    document.getElementById('calc_expertise').value = payload.expertise ?? '';
-    document.getElementById('calc_montant_rasemal_ijmali').value = payload.montant_rasemal_ijmali ?? '';
-    document.getElementById('calc_montant_taawidat_youmiya').value = payload.montant_taawidat_youmiya ?? '';
-    document.getElementById('calc_masarif_janaza').value = payload.masarif_janaza ?? '';
-    document.getElementById('calc_type_malaf').value = payload.type_malaf || '';
+    var p = JSON.parse(el.getAttribute('data-payload')||'{}');
+    document.getElementById('calcForm').action = BASE+'/calculate/'+id;
+    document.getElementById('calc_type_cas').value = p.type_cas||'autre';
+    document.getElementById('calc_montant_initial').value = p.montant_initial??'';
+    document.getElementById('calc_montant_taawidat').value = p.montant_taawidat??0;
+    document.getElementById('calc_montant_masarif_tibiya').value = p.montant_masarif_tibiya??0;
+    document.getElementById('calc_expertise').value = p.expertise??'';
+    document.getElementById('calc_montant_rasemal_ijmali').value = p.montant_rasemal_ijmali??'';
+    document.getElementById('calc_montant_taawidat_youmiya').value = p.montant_taawidat_youmiya??'';
+    document.getElementById('calc_masarif_janaza').value = p.masarif_janaza??'';
+    document.getElementById('calc_type_malaf').value = p.type_malaf||'';
     clearCalcBenefList();
-    (payload.beneficiaires_json || []).forEach(function (row) { addCalcBenefRow(row && row.montant != null ? row.montant : ''); });
+    (p.beneficiaires_json||[]).forEach(function(r){ addCalcBenefRow(r&&r.montant!=null?r.montant:''); });
     toggleCalcExtra(); updateCalcPreview();
     document.getElementById('calcModal').classList.add('open');
 }
-
 function previewCalcFromForm() {
     if (!window.DossierCalc) return;
     fillBreakdownTable(window.DossierCalc.buildBreakdown(readCalcPayloadFromForm()));
     document.getElementById('breakdownModal').classList.add('open');
 }
+/* ── Manual modal ── */
 
-function openManualModal() { document.getElementById('manualModal').classList.add('open'); }
-function clearEditBenefList() { var box = document.getElementById('edit_benef_list'); if (box) box.innerHTML = ''; }
+// Dictionnaire adresses
+var ASSURANCE_ADDRESSES = {
+    'شركة التامين التعاضدية الفلاحية المغربية':  '16 زنقة ابو عنان الرباط',
+    'شركة التامين التعاضدية المركزية المغربية':   '16 زنقة ابو عنان الرباط',
+    'المكتب المركزي المغربي':                     '154 شارع انفا الدار البيضاء',
+    'التأمينات لأرباب النقل':                     '215 شارع الزرقطوني الدار البيضاء',
+    'شركة التأمين أكسا':                          'شارع الحسن الثاني رقم 120-122 الدار البيضاء',
+    'شركة التامين الملكية الوطنية للتأمين':       '83 شارع الجيش الدار البيضاء',
+    'شركة التأمين النقل':                         '6 لاكولين سيدي معروف الدار البيضاء',
+    'شركة التامين الوفاء':                        '01 شارع عبد المومن الدار البيضاء',
+    'شركة التامين اليانز':                        '166 شارع الزرقطوني الدار البيضاء',
+    'شركة التأمين سند':                           'الرقم 4 زنقة ايسلي الدار البيضاء',
+    'شركة التامين سنلام المغرب':                  '216 شارع الزرقطوني الدار البيضاء',
+    'شركة التامين اطلنطا سند':                    '216 شارع الزرقطوني الدار البيضاء',
+};
 
-function addEditBenefRow(val) {
-    val = val === undefined || val === null ? '' : val;
-    var box = document.getElementById('edit_benef_list');
-    if (!box) return;
-    var d = document.createElement('div');
-    d.style.marginBottom = '0.35rem';
-    d.innerHTML = '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="' + String(val).replace(/"/g, '&quot;') + '">';
-    box.appendChild(d);
+// Entreprises personnalisées sauvegardées (localStorage)
+var customAssurances = JSON.parse(localStorage.getItem('customAssurances') || '[]');
+
+function buildAssuranceOptions() {
+    var sel = document.getElementById('manual_nom_assurance');
+    // Supprimer anciennes options custom (avant "autre")
+    Array.from(sel.options).forEach(function(opt) {
+        if (opt.getAttribute('data-custom')) opt.remove();
+    });
+    // Insérer options custom avant "autre"
+    var autreOpt = sel.querySelector('option[value="autre"]');
+    customAssurances.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.nom;
+        opt.textContent = c.nom;
+        opt.setAttribute('data-custom', '1');
+        sel.insertBefore(opt, autreOpt);
+    });
 }
 
-function openEditModalFromButton(el) {
-    const id = el.dataset.id;
-    document.getElementById('editForm').action = BASE + '/dossiers/' + id;
-    document.getElementById('edit_numero_dossier').value = el.dataset.numero_dossier || '';
-    document.getElementById('edit_numero_jugement').value = el.dataset.numero_jugement || '';
-    document.getElementById('edit_date_jugement').value = el.dataset.date_jugement || '';
-    document.getElementById('edit_nom_victime').value = el.dataset.nom_victime || '';
-    document.getElementById('edit_nom_assurance').value = el.dataset.nom_assurance || '';
-    document.getElementById('edit_adresse_assurance').value = el.dataset.adresse_assurance || '';
-    document.getElementById('edit_montant_initial').value = el.dataset.montant_initial || '';
-    document.getElementById('edit_expertise').value = el.dataset.expertise || '';
-    document.getElementById('edit_type_cas').value = el.dataset.type_cas || '';
-    document.getElementById('edit_type_malaf').value = el.dataset.type_malaf || '';
-    document.getElementById('edit_montant_rasemal_ijmali').value = el.dataset.montant_rasemal_ijmali || '';
-    document.getElementById('edit_montant_taawidat_youmiya').value = el.dataset.montant_taawidat_youmiya || '';
-    document.getElementById('edit_masarif_janaza').value = el.dataset.masarif_janaza || '';
-    clearEditBenefList();
-    var benRaw = el.getAttribute('data-beneficiaires');
-    if (benRaw) { try { var arr = JSON.parse(benRaw); if (Array.isArray(arr)) arr.forEach(function (row) { addEditBenefRow(row && row.montant != null ? row.montant : ''); }); } catch(e){} }
-    document.getElementById('editModal').classList.add('open');
-}
+function onAssuranceChange() {
+    var val = document.getElementById('manual_nom_assurance').value;
+    var adresseInput = document.getElementById('manual_adresse_assurance');
+    var wrapAutreNom = document.getElementById('wrap_autre_nom');
 
-function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
-
-document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
-    overlay.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('open'); });
-});
-
-function toggleSaveBtn(id, checked) {
-    const btn = document.getElementById('savebtn-' + id);
-    if (checked) btn.classList.add('visible');
-    else {
-        btn.classList.remove('visible');
-        fetch(BASE + '/dossiers/' + id + '/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-            body: JSON.stringify({ saved: false })
-        });
+    if (val === 'autre') {
+        wrapAutreNom.style.display = '';
+        adresseInput.value = '';
+        adresseInput.removeAttribute('readonly');
+        adresseInput.style.background = '';
+        adresseInput.placeholder = 'أدخل عنوان الشركة الجديدة';
+    } else {
+        wrapAutreNom.style.display = 'none';
+        document.getElementById('manual_nom_assurance_autre').value = '';
+        document.getElementById('manual_nom_assurance_custom').value = '';
+        // Chercher adresse connue (builtin ou custom)
+        var addr = ASSURANCE_ADDRESSES[val] || '';
+        if (!addr) {
+            var found = customAssurances.find(function(c){ return c.nom === val; });
+            if (found) addr = found.adresse;
+        }
+        if (addr) {
+            adresseInput.value = addr;
+            adresseInput.setAttribute('readonly', true);
+            adresseInput.style.background = 'var(--brown-soft)';
+        } else {
+            adresseInput.value = '';
+            adresseInput.removeAttribute('readonly');
+            adresseInput.style.background = '';
+            adresseInput.placeholder = 'أدخل عنوان الشركة';
+        }
     }
 }
 
-function saveDossier(id) {
-    fetch(BASE + '/dossiers/' + id + '/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-        body: JSON.stringify({ saved: true })
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-        if (data.success) {
-            var btn = document.getElementById('savebtn-' + id);
-            btn.textContent = '✅';
-            setTimeout(function () { btn.textContent = '💾'; }, 1500);
-        } else if (data.message) { alert(data.message); }
-    });
+function previewCustomAssurance() {
+    var nom = document.getElementById('manual_nom_assurance_autre').value.trim();
+    document.getElementById('manual_nom_assurance_custom').value = nom;
 }
-// Assurance selector (modal manuel)
-document.getElementById('manual_nom_assurance').addEventListener('change', function() {
-    document.getElementById('wrap_autre_assurance_manual').style.display = this.value === 'autre' ? '' : 'none';
+
+function openManualModal() {
+    buildAssuranceOptions();
+    document.getElementById('manualModal').classList.add('open');
+}
+
+// Sauvegarde entreprise custom à la soumission
+document.querySelector('#manualModal form').addEventListener('submit', function() {
+    var sel = document.getElementById('manual_nom_assurance');
+    if (sel.value === 'autre') {
+        var nom = document.getElementById('manual_nom_assurance_autre').value.trim();
+        var addr = document.getElementById('manual_adresse_assurance').value.trim();
+        if (nom && !customAssurances.find(function(c){ return c.nom === nom; })) {
+            customAssurances.push({ nom: nom, adresse: addr });
+            localStorage.setItem('customAssurances', JSON.stringify(customAssurances));
+            // Ajouter dans ASSURANCE_ADDRESSES pour session
+            ASSURANCE_ADDRESSES[nom] = addr;
+        }
+        // Mettre le vrai nom dans le select pour l'envoyer
+        var opt = document.createElement('option');
+        opt.value = nom; opt.selected = true;
+        sel.appendChild(opt);
+        sel.value = nom;
+    }
 });
 
-// ─── MODAL MANUEL — logique dynamique ───────────────────────────────────────
-
 function onManualTypeCasChange() {
-    var type = document.getElementById('manual_type_cas').value;
-    var isWafa = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
+    var type      = document.getElementById('manual_type_cas').value;
+    var isWafa    = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
     var isFoisDix = type === 'wafaya_irad_omri';
+    var isNizaat  = type === 'nizaat_shughl';
 
-    // Champs montant normaux : cachés si wafat
-    document.getElementById('wrap_manual_montant_initial').style.display = isWafa ? 'none' : '';
-    document.getElementById('wrap_manual_rasemal').style.display         = isWafa ? 'none' : '';
-    document.getElementById('wrap_manual_taawidat').style.display        = isWafa ? 'none' : '';
+    // Champs standards — cachés si wafat ou nizaat
+    document.getElementById('wrap_manual_montant_initial').style.display = (isWafa || isNizaat) ? 'none' : '';
+    document.getElementById('wrap_manual_taawidat').style.display        = (isWafa || isNizaat) ? 'none' : '';
+    document.getElementById('wrap_manual_masarif').style.display         = (isWafa || isNizaat) ? 'none' : '';
+    document.getElementById('wrap_manual_expertise').style.display       = isNizaat ? 'none' : '';
 
-    // Janaza et bénéficiaires : visibles si wafat
+    // Champs wafat
     document.getElementById('wrap_manual_janaza').style.display = isWafa ? '' : 'none';
     document.getElementById('wrap_manual_benef').style.display  = isWafa ? '' : 'none';
 
-    // Label selon type
-    if (isFoisDix) {
-        document.getElementById('manual_benef_label').textContent = 'مبالغ المستفيدين (كل مبلغ × 10)';
-    } else {
-        document.getElementById('manual_benef_label').textContent = 'مبالغ المستفيدين';
-    }
+    // Champs nizaat
+    document.getElementById('wrap_manual_nizaat').style.display = isNizaat ? '' : 'none';
 
-    // Si on vient de choisir wafat et liste vide → ajouter 1 ligne
+    // Label bénéficiaires
+    document.getElementById('manual_benef_label').textContent = isFoisDix
+        ? 'مبالغ المستفيدين (كل مبلغ × 10)'
+        : 'مبالغ المستفيدين';
+
+    // Bénéficiaires par défaut
     if (isWafa && document.getElementById('manual_benef_list').children.length === 0) {
         addManualBenefRow();
+        addManualBenefRow();
     }
+    if (!isWafa) document.getElementById('manual_benef_list').innerHTML = '';
 
-    // Si non wafat, vider la liste bénéficiaires
-    if (!isWafa) {
-        document.getElementById('manual_benef_list').innerHTML = '';
-    }
-
+    if (isNizaat) updateNizaatTotal();
     updateManualTotal();
 }
+function updateNizaatTotal() {
+    var darar    = parseFloat(document.getElementById('nizaat_darar').value)    || 0;
+    var ikhtar   = parseFloat(document.getElementById('nizaat_ikhtar').value)   || 0;
+    var otla     = parseFloat(document.getElementById('nizaat_otla').value)     || 0;
+    var aqdamiya = parseFloat(document.getElementById('nizaat_aqdamiya').value) || 0;
+    var sum = darar + ikhtar + otla + aqdamiya;
 
+    document.getElementById('nizaat_sum_preview').textContent = sum.toFixed(2);
+    
+    // ← Mettre à jour le hidden field montant_initial
+    var hidden = document.getElementById('nizaat_montant_hidden');
+    if (hidden) hidden.value = sum.toFixed(2);
+
+    // ← Mettre à jour aussi manual_total_preview
+    var wrapPreview = document.getElementById('wrap_manual_total_preview');
+    var inputTotal  = document.getElementById('manual_total_preview');
+    var formulaSpan = document.getElementById('manual_total_formula');
+    
+    inputTotal.value = sum.toFixed(2);
+    var parts = [];
+    if (darar)    parts.push('الضرر: '          + darar.toFixed(2));
+    if (ikhtar)   parts.push('الإخطار: '        + ikhtar.toFixed(2));
+    if (otla)     parts.push('العطلة السنوية: ' + otla.toFixed(2));
+    if (aqdamiya) parts.push('الأقدمية: '       + aqdamiya.toFixed(2));
+    formulaSpan.textContent = parts.length ? parts.join(' + ') + ' = ' + sum.toFixed(2) + ' درهم' : '';
+    wrapPreview.style.display = sum > 0 ? '' : 'none';
+}
 function addManualBenefRow() {
     var box = document.getElementById('manual_benef_list');
-    var idx = box.children.length + 1;
+    var idx = box.children.length+1;
     var d = document.createElement('div');
-    d.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;';
-    d.innerHTML =
-        '<span style="font-size:0.75rem;color:var(--text3);min-width:70px;">مستفيد ' + idx + '</span>' +
-        '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="0" ' +
-        '       style="flex:1;" oninput="updateManualTotal()">' +
-        '<button type="button" onclick="removeManualBenefRow(this)" ' +
-        '        style="background:var(--error);color:#fff;border:none;border-radius:6px;padding:0.25rem 0.5rem;cursor:pointer;font-size:0.8rem;">✕</button>';
-    box.appendChild(d);
-    updateManualTotal();
+    d.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.38rem;';
+    d.innerHTML = '<span style="font-size:0.72rem;color:var(--text3);min-width:65px;">مستفيد '+idx+'</span>'
+        +'<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="0" style="flex:1;" oninput="updateManualTotal()">'
+        +'<button type="button" onclick="removeManualBenefRow(this)" style="background:var(--error);color:#fff;border:none;border-radius:5px;padding:0.22rem 0.45rem;cursor:pointer;font-size:0.78rem;">✕</button>';
+    box.appendChild(d); updateManualTotal();
 }
-
 function removeManualBenefRow(btn) {
     btn.closest('div').remove();
-    // Renuméroter
-    var spans = document.querySelectorAll('#manual_benef_list span');
-    spans.forEach(function(s, i) { s.textContent = 'مستفيد ' + (i + 1); });
+    document.querySelectorAll('#manual_benef_list span').forEach(function(s,i){ s.textContent='مستفيد '+(i+1); });
     updateManualTotal();
 }
-
 function updateManualTotal() {
-    var type = document.getElementById('manual_type_cas').value;
-    var isWafa = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
+    var type      = document.getElementById('manual_type_cas').value;
+    var isWafa    = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
     var isFoisDix = type === 'wafaya_irad_omri';
+    var isNizaat  = type === 'nizaat_shughl';
 
     var wrapPreview = document.getElementById('wrap_manual_total_preview');
     var inputTotal  = document.getElementById('manual_total_preview');
     var formulaSpan = document.getElementById('manual_total_formula');
 
+    // ── Cas WAFAT ──────────────────────────────────────────
     if (isWafa) {
-        // Somme des bénéficiaires (× 10 si irad omri)
-        var inputs = document.querySelectorAll('#manual_benef_list input[name^="beneficiaires"]');
         var sum = 0;
-        inputs.forEach(function(inp) { sum += parseFloat(inp.value) || 0; });
+        document.querySelectorAll('#manual_benef_list input[name^="beneficiaires"]')
+            .forEach(function(i) { sum += parseFloat(i.value) || 0; });
         var total = isFoisDix ? sum * 10 : sum;
         inputTotal.value = total.toFixed(2);
-        if (isFoisDix) {
-            formulaSpan.textContent = 'مجموع المستفيدين (' + sum.toFixed(2) + ') × 10 = ' + total.toFixed(2) + ' درهم';
-        } else {
-            formulaSpan.textContent = 'مجموع المستفيدين = ' + total.toFixed(2) + ' درهم';
-        }
+        formulaSpan.textContent = isFoisDix
+            ? 'مجموع المستفيدين (' + sum.toFixed(2) + ') × 10 = ' + total.toFixed(2) + ' درهم'
+            : 'مجموع المستفيدين = ' + total.toFixed(2) + ' درهم';
         wrapPreview.style.display = '';
         return;
     }
 
-    var mi  = parseFloat(document.getElementById('manual_montant_initial').value) || 0;
-    var ra  = parseFloat(document.getElementById('manual_rasemal').value) || 0;
-    var ta  = parseFloat(document.getElementById('manual_taawidat').value) || 0;
+    // ── Cas NIZAAT ─────────────────────────────────────────
+    if (isNizaat) {
+        var darar    = parseFloat(document.getElementById('nizaat_darar').value)    || 0;
+        var ikhtar   = parseFloat(document.getElementById('nizaat_ikhtar').value)   || 0;
+        var otla     = parseFloat(document.getElementById('nizaat_otla').value)     || 0;
+        var aqdamiya = parseFloat(document.getElementById('nizaat_aqdamiya').value) || 0;
+        var sumNizaat = darar + ikhtar + otla + aqdamiya;
+        inputTotal.value = sumNizaat.toFixed(2);
+        var parts = [];
+        if (darar)    parts.push('الضرر: '          + darar.toFixed(2));
+        if (ikhtar)   parts.push('الإخطار: '        + ikhtar.toFixed(2));
+        if (otla)     parts.push('العطلة السنوية: ' + otla.toFixed(2));
+        if (aqdamiya) parts.push('الأقدمية: '       + aqdamiya.toFixed(2));
+        formulaSpan.textContent = parts.length
+            ? parts.join(' + ') + ' = ' + sumNizaat.toFixed(2) + ' درهم'
+            : '';
+        wrapPreview.style.display = sumNizaat > 0 ? '' : 'none';
+        return;
+    }
 
-    // Afficher le total uniquement si علاج أو تعويضات موجودين
-    if (ra > 0 || ta > 0) {
-        var total = mi + ra + ta;
+    // ── Cas STANDARD ───────────────────────────────────────
+    var mi           = parseFloat(document.getElementById('manual_montant').value)              || 0;
+    var taawidat     = parseFloat(document.getElementById('manual_montant_taawidat').value)     || 0;
+    var masarifTibiya= parseFloat(document.getElementById('manual_montant_masarif_tibiya').value)|| 0;
+
+    if (mi > 0 || taawidat > 0 || masarifTibiya > 0) {
+        var total = mi + taawidat + masarifTibiya;
         inputTotal.value = total.toFixed(2);
         var parts = [];
-        parts.push('المبلغ الأصلي: ' + mi.toFixed(2));
-        if (ra > 0) parts.push('مصاريف العلاج: ' + ra.toFixed(2));
-        if (ta > 0) parts.push('تعويضات يومية: ' + ta.toFixed(2));
+        if (mi)            parts.push('المبلغ الأصلي: '   + mi.toFixed(2));
+        if (taawidat)      parts.push('تعويضات: '         + taawidat.toFixed(2));
+        if (masarifTibiya) parts.push('مصاريف طبية: '     + masarifTibiya.toFixed(2));
         formulaSpan.textContent = parts.join(' + ') + ' = ' + total.toFixed(2) + ' درهم';
         wrapPreview.style.display = '';
     } else {
         wrapPreview.style.display = 'none';
     }
+}
+
+/* ── Edit modal ── */
+function clearEditBenefList() { var b=document.getElementById('edit_benef_list'); if(b) b.innerHTML=''; }
+function addEditBenefRow(val) {
+    val = val==null ? '' : val;
+    var box=document.getElementById('edit_benef_list'); if(!box) return;
+    var d=document.createElement('div'); d.style.marginBottom='0.3rem';
+    d.innerHTML='<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="'+String(val).replace(/"/g,'&quot;')+'">';
+    box.appendChild(d);
+}
+function openEditModalFromButton(el) {
+    document.getElementById('editForm').action = BASE+'/dossiers/'+el.dataset.id;
+    ['numero_dossier','numero_jugement','date_jugement','nom_victime','nom_assurance',
+     'adresse_assurance','montant_initial','expertise','type_cas','type_malaf',
+     'montant_rasemal_ijmali','montant_taawidat_youmiya','masarif_janaza','montant_taawidat','montant_masarif_tibiya'].forEach(function(k){
+        var val = el.dataset[k] || '';
+        var input = document.getElementById('edit_'+k);
+        if(input) input.value = val;
+    });
+    clearEditBenefList();
+    var benRaw = el.getAttribute('data-beneficiaires');
+    if (benRaw) { try { var arr=JSON.parse(benRaw); if(Array.isArray(arr)) arr.forEach(function(r){ addEditBenefRow(r&&r.montant!=null?r.montant:''); }); } catch(e){} }
+    document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
+
+/* ── Close modal on backdrop click ── */
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
+});
+
+/* ── Save dossier ── */
+function toggleSaveBtn(id, checked) {
+    var btn = document.getElementById('savebtn-'+id);
+    if (checked) { btn.classList.add('visible'); }
+    else {
+        btn.classList.remove('visible');
+        fetch(BASE+'/dossiers/'+id+'/save', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF,'Accept':'application/json'},
+            body: JSON.stringify({saved:false})
+        });
+    }
+}
+function saveDossier(id) {
+    fetch(BASE+'/dossiers/'+id+'/save', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF,'Accept':'application/json'},
+        body: JSON.stringify({saved:true})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (data.success) {
+            var btn=document.getElementById('savebtn-'+id);
+            btn.textContent='✅'; setTimeout(function(){ btn.textContent='💾'; },1500);
+        } else if (data.message) { alert(data.message); }
+    });
 }
 </script>
 </body>
