@@ -19,6 +19,9 @@ RUN php artisan key:generate
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/sites-available/default
+RUN rm -f /etc/nginx/sites-enabled/default && \
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
