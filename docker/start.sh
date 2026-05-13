@@ -47,4 +47,4 @@ echo "=== Running migrations ==="
 php artisan migrate --force 2>&1
 
 echo "=== Starting nginx ==="
-exec nginx -g "daemon off;"
+exec nginx -g "daemon off;"" " 
