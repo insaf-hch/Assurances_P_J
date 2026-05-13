@@ -1,32 +1,43 @@
 #!/bin/bash
-echo "=== Starting php-fpm ==="
-/usr/local/sbin/php-fpm -D
-sleep 3
 
 cd /var/www/html
 
-export DB_HOST=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
-export DB_PORT=3306
-export DB_DATABASE=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
-export DB_USERNAME=root
-export DB_PASSWORD=$(echo "$MYSQL_URL" | sed 's|mysql://[^:]*:\(.*\)@.*|\1|')
-export DB_CONNECTION=mysql
-export APP_KEY=$APP_KEY
-export APP_ENV=production
-export APP_DEBUG=true
-export APP_URL=$APP_URL
-export SESSION_DRIVER=database
-export CACHE_STORE=database
-export LOG_CHANNEL=stderr
+# Extraire les infos de connexion
+DB_H=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
+DB_P=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
+DB_PASS=$(echo "$MYSQL_URL" | sed 's|mysql://[^:]*:\(.*\)@.*|\1|')
 
-echo "DB_HOST=$DB_HOST"
-echo "DB_DATABASE=$DB_DATABASE"
+echo "=== Writing .env ==="
+cat > /var/www/html/.env << ENVEOF
+APP_NAME=Laravel
+APP_ENV=production
+APP_KEY=$APP_KEY
+APP_DEBUG=true
+APP_URL=$APP_URL
 
-# Vider complètement le .env pour forcer Laravel à utiliser les variables d'environnement
-echo "" > .env
+DB_CONNECTION=mysql
+DB_HOST=$DB_H
+DB_PORT=3306
+DB_DATABASE=$DB_P
+DB_USERNAME=root
+DB_PASSWORD=$DB_PASS
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+LOG_CHANNEL=stderr
+LOG_LEVEL=debug
+ENVEOF
+
+echo "=== .env content ==="
+cat /var/www/html/.env
 
 php artisan config:clear
 php artisan cache:clear
+
+echo "=== Starting php-fpm ==="
+/usr/local/sbin/php-fpm -D
+sleep 3
 
 echo "=== Copying nginx config ==="
 cp /etc/nginx/sites-available/default.template /etc/nginx/sites-available/default
