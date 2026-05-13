@@ -3,22 +3,8 @@ echo "=== Starting php-fpm ==="
 /usr/local/sbin/php-fpm -D
 sleep 3
 
-echo "=== ENV VARS DEBUG ==="
-echo "MYSQL_URL=$MYSQL_URL"
-
 echo "=== Setting up .env ==="
 cd /var/www/html
-
-# Parser MYSQL_URL pour extraire les composants
-DB_HOST=$(echo $MYSQL_URL | sed 's/.*@\(.*\):.*/\1/')
-DB_PORT=$(echo $MYSQL_URL | sed 's/.*:\([0-9]*\)\/.*/\1/')
-DB_DATABASE=$(echo $MYSQL_URL | sed 's/.*\/\(.*\)/\1/')
-DB_USERNAME=$(echo $MYSQL_URL | sed 's/.*\/\/\(.*\):.*/\1/')
-DB_PASSWORD=$(echo $MYSQL_URL | sed 's/.*:\/\/[^:]*:\(.*\)@.*/\1/')
-
-echo "DB_HOST=$DB_HOST"
-echo "DB_PORT=$DB_PORT"
-echo "DB_DATABASE=$DB_DATABASE"
 
 cat > .env << EOF
 APP_NAME=Laravel
@@ -28,11 +14,11 @@ APP_DEBUG=false
 APP_URL=${APP_URL}
 
 DB_CONNECTION=mysql
-DB_HOST=${DB_HOST}
-DB_PORT=${DB_PORT}
-DB_DATABASE=${DB_DATABASE}
-DB_USERNAME=${DB_USERNAME}
-DB_PASSWORD=${DB_PASSWORD}
+DB_HOST=${MYSQLHOST}
+DB_PORT=${MYSQLPORT}
+DB_DATABASE=${MYSQLDATABASE}
+DB_USERNAME=${MYSQLUSER}
+DB_PASSWORD=${MYSQLPASSWORD}
 
 SESSION_DRIVER=database
 CACHE_STORE=database
