@@ -3,37 +3,28 @@ echo "=== Starting php-fpm ==="
 /usr/local/sbin/php-fpm -D
 sleep 3
 
-echo "=== Setting up .env ==="
 cd /var/www/html
 
 export DB_HOST=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
-export DB_PORT=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F'[:/]' '{print $2}')
+export DB_PORT=3306
 export DB_DATABASE=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
 export DB_USERNAME=root
 export DB_PASSWORD=$(echo "$MYSQL_URL" | sed 's|mysql://[^:]*:\(.*\)@.*|\1|')
+export DB_CONNECTION=mysql
+export APP_KEY=$APP_KEY
+export APP_ENV=production
+export APP_DEBUG=true
+export APP_URL=$APP_URL
+export SESSION_DRIVER=database
+export CACHE_STORE=database
+export LOG_CHANNEL=stderr
 
-cat > .env << ENVEOF
-APP_NAME=Laravel
-APP_ENV=production
-APP_KEY=$APP_KEY
-APP_DEBUG=true
-APP_URL=$APP_URL
+echo "DB_HOST=$DB_HOST"
+echo "DB_DATABASE=$DB_DATABASE"
 
-DB_CONNECTION=mysql
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_DATABASE=$DB_DATABASE
-DB_USERNAME=$DB_USERNAME
-DB_PASSWORD=$DB_PASSWORD
+# Vider complètement le .env pour forcer Laravel à utiliser les variables d'environnement
+echo "" > .env
 
-SESSION_DRIVER=database
-CACHE_STORE=database
-QUEUE_CONNECTION=database
-LOG_CHANNEL=stderr
-LOG_LEVEL=debug
-ENVEOF
-
-echo "=== Clearing config cache ==="
 php artisan config:clear
 php artisan cache:clear
 
