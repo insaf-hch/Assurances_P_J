@@ -13,12 +13,11 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-RUN cp .env.example .env \
-    && php artisan key:generate --force \
-    && rm -f bootstrap/cache/*.php \
-    && echo "" > .env
+RUN cp .env.example .env && php artisan key:generate --force && rm -f bootstrap/cache/*.php && echo "" > .env
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/www/html/storage \
+    && chmod -R 777 /var/www/html/bootstrap/cache
 
 COPY docker/nginx.conf.template /etc/nginx/sites-available/default.template
 COPY docker/start.sh /start.sh
