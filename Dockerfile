@@ -18,8 +18,8 @@ RUN cp .env.example .env && php artisan key:generate --force && rm -f bootstrap/
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 777 /var/www/html/storage \
     && chmod -R 777 /var/www/html/bootstrap/cache
-
-COPY docker/nginx.conf.template /etc/nginx/sites-available/default.template
+    
+COPY docker/nginx.conf.template /etc/nginx/sites-available/default
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 

@@ -41,6 +41,9 @@ sleep 2
 echo "=== Linking nginx ==="
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
+echo "=== Nginx config test ==="
+nginx -t
+
 echo "=== Running migrations ==="
 php artisan migrate --force
 
