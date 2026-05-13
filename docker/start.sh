@@ -4,13 +4,21 @@ echo "=== Starting php-fpm ==="
 sleep 3
 
 echo "=== ENV VARS DEBUG ==="
-echo "DB_HOST=$DB_HOST"
-echo "DB_PORT=$DB_PORT"
-echo "MYSQLHOST=$MYSQLHOST"
-echo "MYSQLPORT=$MYSQLPORT"
+echo "MYSQL_URL=$MYSQL_URL"
 
 echo "=== Setting up .env ==="
 cd /var/www/html
+
+# Parser MYSQL_URL pour extraire les composants
+DB_HOST=$(echo $MYSQL_URL | sed 's/.*@\(.*\):.*/\1/')
+DB_PORT=$(echo $MYSQL_URL | sed 's/.*:\([0-9]*\)\/.*/\1/')
+DB_DATABASE=$(echo $MYSQL_URL | sed 's/.*\/\(.*\)/\1/')
+DB_USERNAME=$(echo $MYSQL_URL | sed 's/.*\/\/\(.*\):.*/\1/')
+DB_PASSWORD=$(echo $MYSQL_URL | sed 's/.*:\/\/[^:]*:\(.*\)@.*/\1/')
+
+echo "DB_HOST=$DB_HOST"
+echo "DB_PORT=$DB_PORT"
+echo "DB_DATABASE=$DB_DATABASE"
 
 cat > .env << EOF
 APP_NAME=Laravel
@@ -29,7 +37,6 @@ DB_PASSWORD=${DB_PASSWORD}
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
-
 LOG_CHANNEL=stderr
 LOG_LEVEL=debug
 EOF
