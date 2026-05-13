@@ -2,7 +2,9 @@
 
 cd /var/www/html
 
+# Permissions
 chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 
 DB_H=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
@@ -31,7 +33,11 @@ LOG_CHANNEL=stderr
 LOG_LEVEL=debug
 ENVEOF
 
-echo "=== .env written, starting php-fpm ==="
+# Donner accès au .env pour www-data
+chown www-data:www-data /var/www/html/.env
+chmod 644 /var/www/html/.env
+
+echo "=== Starting php-fpm ==="
 /usr/local/sbin/php-fpm -D
 sleep 3
 
