@@ -13,7 +13,7 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-RUN cp .env.example .env && php artisan key:generate
+RUN cp .env.example .env && php artisan key:generate --force && echo "" > .env
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
@@ -21,6 +21,5 @@ COPY docker/nginx.conf.template /etc/nginx/sites-available/default.template
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Désactiver le entrypoint de l'image php-fpm
 ENTRYPOINT []
 CMD ["/bin/bash", "/start.sh"]
