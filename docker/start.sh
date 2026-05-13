@@ -6,30 +6,33 @@ sleep 3
 echo "=== Setting up .env ==="
 cd /var/www/html
 
-# Extraire depuis MYSQL_URL avec awk (plus fiable que sed)
-PARSED_USER=$(echo "$MYSQL_URL" | awk -F'[@/:]' '{print $4}')
-PARSED_PASS=$(echo "$MYSQL_URL" | awk -F'@' '{print $1}' | awk -F'://' '{print $2}' | awk -F':' '{print $2}')
-PARSED_HOST=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
-PARSED_PORT=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F'[:/]' '{print $2}')
-PARSED_DB=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
+# Extraire host, port, database depuis MYSQL_URL
+export DB_HOST=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
+export DB_PORT=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F'[:/]' '{print $2}')
+export DB_DATABASE=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
+# Pour user et password, utiliser les variables Railway directement
+export DB_USERNAME=root
+export DB_PASSWORD=$(echo "$MYSQL_URL" | sed 's|mysql://[^:]*:\(.*\)@.*|\1|')
 
-echo "HOST=$PARSED_HOST"
-echo "PORT=$PARSED_PORT"
-echo "DB=$PARSED_DB"
+echo "HOST=$DB_HOST"
+echo "PORT=$DB_PORT"  
+echo "DB=$DB_DATABASE"
+echo "USER=$DB_USERNAME"
+echo "PASS_LENGTH=${#DB_PASSWORD}"
 
 cat > .env << ENVEOF
 APP_NAME=Laravel
 APP_ENV=production
-APP_KEY=${APP_KEY}
+APP_KEY=$APP_KEY
 APP_DEBUG=false
-APP_URL=${APP_URL}
+APP_URL=$APP_URL
 
 DB_CONNECTION=mysql
-DB_HOST=${PARSED_HOST}
-DB_PORT=${PARSED_PORT}
-DB_DATABASE=${PARSED_DB}
-DB_USERNAME=${PARSED_USER}
-DB_PASSWORD=${PARSED_PASS}
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 
 SESSION_DRIVER=database
 CACHE_STORE=database
