@@ -2,6 +2,10 @@
 
 cd /var/www/html
 
+# Corriger les permissions
+chown -R www-data:www-data /var/www/html/storage
+chmod -R 775 /var/www/html/storage
+
 # Extraire les infos de connexion
 DB_H=$(echo "$MYSQL_URL" | awk -F'@' '{print $2}' | awk -F':' '{print $1}')
 DB_P=$(echo "$MYSQL_URL" | awk -F'/' '{print $NF}')
@@ -32,9 +36,6 @@ ENVEOF
 echo "=== .env content ==="
 cat /var/www/html/.env
 
-php artisan config:clear
-php artisan cache:clear
-
 echo "=== Starting php-fpm ==="
 /usr/local/sbin/php-fpm -D
 sleep 3
@@ -47,4 +48,4 @@ echo "=== Running migrations ==="
 php artisan migrate --force 2>&1
 
 echo "=== Starting nginx ==="
-exec nginx -g "daemon off;"" " 
+exec nginx -g "daemon off;"
