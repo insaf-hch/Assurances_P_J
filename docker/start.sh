@@ -20,7 +20,7 @@ DB_PASSWORD=${MYSQLPASSWORD}
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
-LOG_CHANNEL=stderr
+LOG_CHANNEL=stack
 LOG_LEVEL=debug
 ENVEOF
 
@@ -30,6 +30,10 @@ cat /var/www/html/.env
 echo "=== Clearing caches ==="
 php artisan config:clear
 php artisan cache:clear
+
+echo "=== Caching fresh config ==="
+php artisan config:cache   # ← AJOUTE CETTE LIGNE
+
 
 echo "=== Fixing permissions ==="
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
