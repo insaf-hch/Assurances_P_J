@@ -15,8 +15,6 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 RUN cp .env.example .env \
     && php artisan key:generate --force \
-    && php artisan config:clear \
-    && php artisan cache:clear \
     && rm -f bootstrap/cache/*.php \
     && echo "" > .env
 
