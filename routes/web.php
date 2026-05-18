@@ -43,4 +43,5 @@ Route::get('/bayans/{bayan}/donn', function(\App\Models\Bayan $bayan) {
     return view('bayans.DonnBaayan', compact('bayan'));
 })->name('bayans.donn');
 
+
 Route::get('/wathaiq', [WathaiqController::class, 'index'])->name('wathaiq.index');
