@@ -229,6 +229,7 @@
     <div class="card-top">
       <div class="card-top-title">نظام التأمينات</div>
       
+      
     </div>
 
     <!-- logo rond centré -->
