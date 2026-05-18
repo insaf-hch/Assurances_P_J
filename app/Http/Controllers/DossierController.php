@@ -159,6 +159,10 @@ public function imprimer(int $id)
         'beneficiaires' => 'nullable|array',
         'beneficiaires.*.montant' => 'nullable|numeric|min:0',
         'beneficiaires_json' => 'nullable|string',
+        'nizaat_darar'    => 'nullable|numeric|min:0',
+'nizaat_ikhtar'   => 'nullable|numeric|min:0',
+'nizaat_otla'     => 'nullable|numeric|min:0',
+'nizaat_aqdamiya' => 'nullable|numeric|min:0',
     ]);
 
     // Traitement des bénéficiaires
@@ -218,7 +222,12 @@ public function imprimer(int $id)
             'masarif_janaza' => $masarifJanaza,
             'type_malaf' => $validated['type_malaf'] ?? $dossier->type_malaf,
             'beneficiaires_json' => $beneficiairesJson,
+            'nizaat_darar'    => (float) ($validated['nizaat_darar']    ?? $dossier->nizaat_darar    ?? 0),
+'nizaat_ikhtar'   => (float) ($validated['nizaat_ikhtar']   ?? $dossier->nizaat_ikhtar   ?? 0),
+'nizaat_otla'     => (float) ($validated['nizaat_otla']     ?? $dossier->nizaat_otla     ?? 0),
+'nizaat_aqdamiya' => (float) ($validated['nizaat_aqdamiya'] ?? $dossier->nizaat_aqdamiya ?? 0),
         ]);
+
 
         // ✅ Forcer le recalcul avec fresh() pour avoir les dernières valeurs
         $dossierFraiche = $dossier->fresh();
@@ -248,6 +257,12 @@ public function imprimer(int $id)
         'beneficiaires' => 'nullable|array',
         'beneficiaires.*.montant' => 'nullable|numeric|min:0',
         'beneficiaires_json' => 'nullable|string',
+
+        // Dans validate() de update(), ajouter :
+'nizaat_darar'    => 'nullable|numeric|min:0',
+'nizaat_ikhtar'   => 'nullable|numeric|min:0',
+'nizaat_otla'     => 'nullable|numeric|min:0',
+'nizaat_aqdamiya' => 'nullable|numeric|min:0',
     ]);
 
     // Traitement des bénéficiaires
@@ -276,7 +291,7 @@ public function imprimer(int $id)
     $updateData = [];
     foreach ($validated as $key => $value) {
         if (in_array($key, ['expertise', 'montant_initial', 'montant_rasemal_ijmali', 
-        'montant_taawidat_youmiya', 'masarif_janaza','montant_taawidat','montant_masarif_tibiya',  ])) {
+        'montant_taawidat_youmiya', 'masarif_janaza','montant_taawidat','montant_masarif_tibiya','nizaat_darar', 'nizaat_ikhtar', 'nizaat_otla', 'nizaat_aqdamiya'  ])) {
             $updateData[$key] = (float) ($value ?? 0);
             
         } else {

@@ -120,7 +120,7 @@ class CalculService
     $expertise     = (float) ($dossier->expertise ?? 0);
     $masarifJanaza = (float) ($dossier->masarif_janaza ?? 0);
 
-    $total = ceil($rasmQadai + $rusumMurafaa + $rasmBahth + $expertise + $masarifJanaza);
+    $total = (float) ceil($rasmQadai + $rusumMurafaa + $rasmBahth + $expertise);
 
     $details = [
         'montant_original'  => (float) ($dossier->montant_initial ?? 0),
@@ -172,16 +172,17 @@ private function getMontantDeBase(Dossier $dossier): float
             return $montantInitial;
 
         case 'wafaya_irad_omri':
-            return $this->sommeBeneficiaires($beneficiaires, true);
+    return round($this->sommeBeneficiaires($beneficiaires, true) + (float)($dossier->masarif_janaza ?? 0), 2);
 
-        case 'wafaya_ras_mal':
-            return $this->sommeBeneficiaires($beneficiaires, false);
+case 'wafaya_ras_mal':
+    return round($this->sommeBeneficiaires($beneficiaires, false) + (float)($dossier->masarif_janaza ?? 0), 2);;
 
-        case 'masdar_total_taawidat':
-            if ($rasemal > 0 || $taawidat > 0) {
-                return round($rasemal + $taawidat, 2);
-            }
-            return $montantInitial;
+   case 'masdar_total_taawidat':
+    $masarifTibiya   = (float) ($dossier->montant_masarif_tibiya ?? 0);
+    $taawidatMontant = (float) ($dossier->montant_taawidat ?? 0);
+    return round($montantInitial + $taawidatMontant + $masarifTibiya, 2);
+    // ✅ 39336.13 + 4121.66 + 0 = 43457.79
+    // 39336.13 + 4121.66 + 0 = 43457.79 ✅
 
         case 'gharama_ijbariya':
             return $montantInitial;
@@ -220,24 +221,62 @@ private function getMontantDeBase(Dossier $dossier): float
         return "({$montant} × 1%) + 300 = " . round(($montant * 0.01) + 300, 2);
     }
 
-    private function convertirEnLettres(float $montant): string
-    {
-        $entier = (int) $montant;
+   private function convertirEnLettres(float $montant): string
+{
+    $entier = (int) $montant; // ceil() déjà appliqué avant l'appel
 
-        if ($entier < 0 || $entier > 999999) return 'مبلغ غير محدد';
+    if ($entier <= 0 || $entier > 999999) return 'مبلغ غير محدد';
 
-        $units = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
-        $tens  = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+    $units = [
+        1=>'واحد', 2=>'اثنان', 3=>'ثلاثة', 4=>'أربعة', 5=>'خمسة',
+        6=>'ستة', 7=>'سبعة', 8=>'ثمانية', 9=>'تسعة', 10=>'عشرة',
+        11=>'أحد عشر', 12=>'اثنا عشر', 13=>'ثلاثة عشر', 14=>'أربعة عشر',
+        15=>'خمسة عشر', 16=>'ستة عشر', 17=>'سبعة عشر', 18=>'ثمانية عشر',
+        19=>'تسعة عشر',
+    ];
+    $tens = [
+        2=>'عشرون', 3=>'ثلاثون', 4=>'أربعون', 5=>'خمسون',
+        6=>'ستون', 7=>'سبعون', 8=>'ثمانون', 9=>'تسعون',
+    ];
+    $hundreds = [
+        1=>'مائة', 2=>'مئتان', 3=>'ثلاثمائة', 4=>'أربعمائة',
+        5=>'خمسمائة', 6=>'ستمائة', 7=>'سبعمائة', 8=>'ثمانمائة', 9=>'تسعمائة',
+    ];
 
-        if ($entier < 10)  return $units[$entier] . ' دراهم';
-        if ($entier < 100) {
-            $dizaine = intdiv($entier, 10);
-            $unite   = $entier % 10;
-            if ($unite == 0) return $tens[$dizaine] . ' درهما';
-            return $units[$unite] . ' و ' . $tens[$dizaine] . ' درهما';
-        }
-        return (string) $entier . ' درهماً';
+    $parts = [];
+
+    // الآلاف
+    $milliers = intdiv($entier, 1000);
+    $reste    = $entier % 1000;
+
+    if ($milliers > 0) {
+        if ($milliers === 1)     $parts[] = 'ألف';
+        elseif ($milliers === 2) $parts[] = 'ألفان';
+        elseif ($milliers <= 10) $parts[] = ($units[$milliers] ?? $milliers) . ' آلاف';
+        else                     $parts[] = ($units[$milliers] ?? $milliers) . ' ألف';
     }
+
+    // المئات
+    $centaines = intdiv($reste, 100);
+    $reste2    = $reste % 100;
+    if ($centaines > 0) $parts[] = $hundreds[$centaines];
+
+    // العشرات والآحاد
+    if ($reste2 > 0) {
+        if ($reste2 <= 19) {
+            $parts[] = $units[$reste2];
+        } else {
+            $dizaine = intdiv($reste2, 10);
+            $unite   = $reste2 % 10;
+            if ($unite > 0)
+                $parts[] = ($units[$unite] ?? '') . ' و' . $tens[$dizaine];
+            else
+                $parts[] = $tens[$dizaine];
+        }
+    }
+
+    return implode(' و', $parts) . ' درهماً';
+}
 
   public function buildBreakdown(Dossier $dossier): array
 {
@@ -262,9 +301,21 @@ private function getMontantDeBase(Dossier $dossier): float
             ($dossier->nizaat_aqdamiya ?? 0),
             2
         );
+   } elseif ($dossier->type_cas === 'wafaya_irad_omri' || $dossier->type_cas === 'wafaya_ras_mal') {
+    $foisDix  = ($dossier->type_cas === 'wafaya_irad_omri');
+    $montantInitial = $this->sommeBeneficiaires($dossier->beneficiaires_json, $foisDix);
+    $majmou   = round($montantInitial + $masarifJanaza, 2);
+} else {
+    $montantInitial = (float) ($dossier->montant_initial ?? 0);
+    
+    if ($dossier->type_cas === 'masdar_total_taawidat') {
+        // ✅ montant déjà complet, pas de double comptage
+        $majmou = round($montantInitial + $taawidat + $masarifTibiya, 2);
+        // 39336.13 + 4121.66 + 0 = 43457.79 ✅
     } else {
         $majmou = round($montantInitial + $taawidat + $masarifTibiya + $masarifJanaza, 2);
     }
+}
 
     return [
         'type_cas'               => $dossier->type_cas,

@@ -48,51 +48,60 @@ class ManualController extends Controller
             }
         }
 
-        $nomNorm = $this->insuranceDetectionService->detectAndNormalize($validated['nom_assurance'] ?? null);
+        $nomNorm       = $this->insuranceDetectionService->detectAndNormalize($validated['nom_assurance'] ?? null);
         $calculService = $this->calculService;
 
-DB::transaction(function () use ($validated, $beneficiaires, $nomNorm, $calculService) {
+        // ── Calcul du montant initial selon le type ──────────────
+        $montantInitial = match($validated['type_cas'] ?? null) {
+            'nizaat_shughl' => round(
+                ($validated['nizaat_darar']    ?? 0) +
+                ($validated['nizaat_ikhtar']   ?? 0) +
+                ($validated['nizaat_otla']     ?? 0) +
+                ($validated['nizaat_aqdamiya'] ?? 0),
+                2
+            ),
+            'wafaya_irad_omri' => round(
+                array_sum(array_column($beneficiaires, 'montant')) * 10,
+                2
+            ),
+            'wafaya_ras_mal' => round(
+                array_sum(array_column($beneficiaires, 'montant')),
+                2
+            ),
+            default => (float) ($validated['montant_initial'] ?? 0),
+        };
 
-    // ← Ajouter cette ligne avant create()
-    $montantInitial = ($validated['type_cas'] ?? null) === 'nizaat_shughl'
-        ? round(
-            ($validated['nizaat_darar']    ?? 0) +
-            ($validated['nizaat_ikhtar']   ?? 0) +
-            ($validated['nizaat_otla']     ?? 0) +
-            ($validated['nizaat_aqdamiya'] ?? 0),
-            2
-        )
-        : (float) ($validated['montant_initial'] ?? 0);
+        DB::transaction(function () use ($validated, $beneficiaires, $nomNorm, $calculService, $montantInitial) {
 
-    $dossier = Dossier::create([
-        'numero_dossier'           => $validated['numero_dossier'] ?? null,
-        'numero_jugement'          => $validated['numero_jugement'] ?? null,
-        'date_jugement'            => $validated['date_jugement'] ?? null,
-        'nom_victime'              => $validated['nom_victime'] ?? null,
-        'nom_assurance'            => $validated['nom_assurance'] ?? null,
-        'nom_assurance_normalise'  => $nomNorm,
-        'adresse_assurance'        => $validated['adresse_assurance'] ?? null,
-        'montant_initial'          => $montantInitial,  // ← remplacer ici
-        'montant_rasemal_ijmali'   => (float) ($validated['montant_rasemal_ijmali'] ?? 0),
-        'montant_taawidat_youmiya' => (float) ($validated['montant_taawidat_youmiya'] ?? 0),
-        'montant_taawidat'         => (float) ($validated['montant_taawidat'] ?? 0),
-        'montant_masarif_tibiya'   => (float) ($validated['montant_masarif_tibiya'] ?? 0),
-        'masarif_janaza'           => (float) ($validated['masarif_janaza'] ?? 0),
-        'type_cas'                 => $validated['type_cas'] ?? null,
-        'type_malaf'               => $validated['type_malaf'] ?? null,
-        'expertise'                => (float) ($validated['expertise'] ?? 0),
-        'beneficiaires_json'       => $beneficiaires !== [] ? $beneficiaires : null,
-        'nizaat_darar'             => (float) ($validated['nizaat_darar'] ?? 0),
-        'nizaat_ikhtar'            => (float) ($validated['nizaat_ikhtar'] ?? 0),
-        'nizaat_otla'              => (float) ($validated['nizaat_otla'] ?? 0),
-        'nizaat_aqdamiya'          => (float) ($validated['nizaat_aqdamiya'] ?? 0),
-        'saved'                    => false,
-    ]);
+            $dossier = Dossier::create([
+                'numero_dossier'           => $validated['numero_dossier']    ?? null,
+                'numero_jugement'          => $validated['numero_jugement']   ?? null,
+                'date_jugement'            => $validated['date_jugement']     ?? null,
+                'nom_victime'              => $validated['nom_victime']       ?? null,
+                'nom_assurance'            => $validated['nom_assurance']     ?? null,
+                'nom_assurance_normalise'  => $nomNorm,
+                'adresse_assurance'        => $validated['adresse_assurance'] ?? null,
+                'montant_initial'          => $montantInitial,
+                'montant_rasemal_ijmali'   => (float) ($validated['montant_rasemal_ijmali']   ?? 0),
+                'montant_taawidat_youmiya' => (float) ($validated['montant_taawidat_youmiya'] ?? 0),
+                'montant_taawidat'         => (float) ($validated['montant_taawidat']         ?? 0),
+                'montant_masarif_tibiya'   => (float) ($validated['montant_masarif_tibiya']   ?? 0),
+                'masarif_janaza'           => (float) ($validated['masarif_janaza']           ?? 0),
+                'type_cas'                 => $validated['type_cas']   ?? null,
+                'type_malaf'               => $validated['type_malaf'] ?? null,
+                'expertise'                => (float) ($validated['expertise'] ?? 0),
+                'beneficiaires_json'       => $beneficiaires !== [] ? $beneficiaires : null,
+                'nizaat_darar'             => (float) ($validated['nizaat_darar']    ?? 0),
+                'nizaat_ikhtar'            => (float) ($validated['nizaat_ikhtar']   ?? 0),
+                'nizaat_otla'              => (float) ($validated['nizaat_otla']     ?? 0),
+                'nizaat_aqdamiya'          => (float) ($validated['nizaat_aqdamiya'] ?? 0),
+                'saved'                    => false,
+            ]);
 
-    if ($dossier->type_cas) {
-        $calculService->createOrUpdateCalcul($dossier->fresh());
-    }
-});
+            if ($dossier->type_cas) {
+                $calculService->createOrUpdateCalcul($dossier->fresh());
+            }
+        });
 
         return redirect()->route('dashboard')->with('success', 'تم تسجيل الملف يدوياً.');
     }

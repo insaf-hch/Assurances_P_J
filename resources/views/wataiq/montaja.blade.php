@@ -237,7 +237,7 @@ tr:hover td { background: var(--sky-soft); }
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">القائمة الرئيسية</div>
-            <a href="{{ route('home') }}" class="nav-item">
+            <a href="{{ route('dashboard') }}" class="nav-item">
                 <span class="nav-icon">🗂️</span> الملفات
             </a>
             <a href="{{ route('wathaiq.index') }}" class="nav-item active">

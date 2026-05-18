@@ -31,18 +31,38 @@
             case 'irad_omri_ras_mal':
                 return round2(mi);
 
-            case 'masdar_total_taawidat':
-                var somme = round2(mri + mty);
-                return somme > 0 ? somme : round2(mi);
+            case 'masdar_total_taawidat': {
+    var mi2       = parseFloat(state.montant_initial)        || 0; // المبلغ = 203900
+    var mty2      = parseFloat(state.montant_taawidat_youmiya) || 0; // تعويضات يومية = 4900
+    var tibiya2   = parseFloat(state.montant_masarif_tibiya) || 0; // المصاريف الطبية = 13900
+
+    // Base = المبلغ + تعويضات يومية + المصاريف الطبية
+    return round2(mi2 + mty2 + tibiya2);
+}
 
             case 'gharama_ijbariya':
                 return round2(mi);
 
-            case 'wafaya_irad_omri':
-                return sommeBeneficiaires(ben, true);
+            case 'wafaya_irad_omri': {
+                // BUG FIX: الرسم القضائي يحسب على المجموع (مستفيدون + جنازة)
+                var benSum = sommeBeneficiaires(ben, true);
+                var janaza = parseFloat(state.masarif_janaza) || 0;
+                return round2(benSum + janaza);
+            }
 
-            case 'wafaya_ras_mal':
-                return sommeBeneficiaires(ben, false);
+            case 'wafaya_ras_mal': {
+                // BUG FIX: الرسم القضائي يحسب على المجموع (مستفيدون + جنازة)
+                var benSum = sommeBeneficiaires(ben, false);
+                var janaza = parseFloat(state.masarif_janaza) || 0;
+                return round2(benSum + janaza);
+            }
+
+            case 'nizaat_shughl':
+                var darar    = parseFloat(state.nizaat_darar)    || 0;
+                var ikhtar   = parseFloat(state.nizaat_ikhtar)   || 0;
+                var otla     = parseFloat(state.nizaat_otla)     || 0;
+                var aqdamiya = parseFloat(state.nizaat_aqdamiya) || 0;
+                return round2(darar + ikhtar + otla + aqdamiya);
 
             default:
                 if (mri > 0 || mty > 0) {
@@ -60,54 +80,81 @@
         return round2(m * 0.01 + 300);
     }
 
-function buildBreakdown(state) {
-    var type         = state.type_cas || 'autre';
-    var montantPour  = montantPourRasm(state);
-    var rasm         = rasmQadai(montantPour);
-    var expertise    = parseFloat(state.expertise) || 0;
-    var rusumMurafaa = 10;
-    var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
-    var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
-                        ? parseFloat(state.masarif_janaza) || 0
-                        : 0;
+    function buildBreakdown(state) {
+        var type         = state.type_cas || 'autre';
+        var montantPour  = montantPourRasm(state);  // المجموع (base pour الرسم القضائي)
+        var rasm         = rasmQadai(montantPour);
+        var expertise    = parseFloat(state.expertise) || 0;
+        var rusumMurafaa = 10;
+        var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
+        var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
+                            ? parseFloat(state.masarif_janaza) || 0
+                            : 0;
 
-    // ── Nouveaux champs ──
-    var taawidat      = parseFloat(state.montant_taawidat)       || 0;
-    var masarifTibiya = parseFloat(state.montant_masarif_tibiya) || 0;
+        var taawidat      = parseFloat(state.montant_taawidat)       || 0;
+        var masarifTibiya = parseFloat(state.montant_masarif_tibiya) || 0;
 
-    var total = round2(rasm + rusumMurafaa + rasmBahth + expertise + janaza);
+        // BUG FIX: المبلغ المؤدى = frais judiciaires SEULEMENT (sans janaza)
+        // janaza est déjà dans المجموع, elle ne doit pas s'ajouter au total des frais
+        var total = round2(rasm + rusumMurafaa + rasmBahth + expertise);
 
-    // ── montant affiché dans la ligne "المبلغ" ──
-    var montantAfficheOriginal;
-    if (type === 'masdar_total_taawidat') {
-        montantAfficheOriginal = round2(
-            (parseFloat(state.montant_rasemal_ijmali) || 0) +
-            (parseFloat(state.montant_taawidat_youmiya) || 0)
-        );
-    } else if (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal') {
-        montantAfficheOriginal = montantPour;
-    } else {
-        montantAfficheOriginal = round2(parseFloat(state.montant_initial) || 0);
+        // ── montant affiché dans la ligne "المبلغ" / "مجموع المستفيدين" ──
+        var montantAfficheOriginal;
+
+        if (type === 'nizaat_shughl') {
+            var darar    = parseFloat(state.nizaat_darar)    || 0;
+            var ikhtar   = parseFloat(state.nizaat_ikhtar)   || 0;
+            var otla     = parseFloat(state.nizaat_otla)     || 0;
+            var aqdamiya = parseFloat(state.nizaat_aqdamiya) || 0;
+            montantAfficheOriginal = round2(darar + ikhtar + otla + aqdamiya);
+
+        } else if (type === 'masdar_total_taawidat') {
+            montantAfficheOriginal = round2(
+                (parseFloat(state.montant_rasemal_ijmali) || 0) +
+                (parseFloat(state.montant_taawidat_youmiya) || 0)
+            );
+        } else if (type === 'wafaya_irad_omri') {
+            // Afficher uniquement la somme des bénéficiaires (sans janaza)
+            montantAfficheOriginal = sommeBeneficiaires(state.beneficiaires_json, true);
+        } else if (type === 'wafaya_ras_mal') {
+            // Afficher uniquement la somme des bénéficiaires (sans janaza)
+            montantAfficheOriginal = sommeBeneficiaires(state.beneficiaires_json, false);
+        } else {
+            montantAfficheOriginal = round2(parseFloat(state.montant_initial) || 0);
+        }
+
+        // ── المجموع ──
+        var majmou;
+        if (type === 'nizaat_shughl') {
+            majmou = montantAfficheOriginal;
+        } else if (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal') {
+            // BUG FIX: المجموع = مجموع المستفيدين + مصاريف الجنازة
+            majmou = round2(montantAfficheOriginal + janaza);
+        } else {
+            majmou = round2(montantAfficheOriginal + taawidat + masarifTibiya + janaza);
+        }
+
+        return {
+            montant               : montantAfficheOriginal,
+            montant_taawidat      : taawidat,
+            montant_masarif_tibiya: masarifTibiya,
+            masarif_janaza        : round2(janaza),
+            montant_original      : majmou,          // المجموع
+            rasm_qadai            : rasm,             // 2.5% × majmou
+            rusum_murafaa         : rusumMurafaa,
+            rasm_bahth            : rasmBahth,
+            expertise             : round2(expertise),
+            total                 : total,            // المبلغ المؤدى (frais seulement)
+            type_cas              : type,
+            montant_pour_rasm     : montantPour,
+            // champs nizaat exposés pour fillBreakdownTable
+            nizaat_darar          : parseFloat(state.nizaat_darar)    || 0,
+            nizaat_ikhtar         : parseFloat(state.nizaat_ikhtar)   || 0,
+            nizaat_otla           : parseFloat(state.nizaat_otla)     || 0,
+            nizaat_aqdamiya       : parseFloat(state.nizaat_aqdamiya) || 0,
+        };
     }
 
-    // ── المجموع = montant_original + taawidat + masarif_tibiya + janaza ──
-    var majmou = round2(montantAfficheOriginal + taawidat + masarifTibiya + janaza);
-
-    return {
-        montant           : montantAfficheOriginal,   // المبلغ
-        montant_taawidat  : taawidat,                 // التعويضات
-        montant_masarif_tibiya : masarifTibiya,        // المصاريف الطبية
-        masarif_janaza    : round2(janaza),            // مصاريف الجنازة
-        montant_original  : majmou,                   // المجموع
-        rasm_qadai        : rasm,                     // الرسم القضائي
-        rusum_murafaa     : rusumMurafaa,              // حقوق المرافعة
-        rasm_bahth        : rasmBahth,                 // رسم البحث
-        expertise         : round2(expertise),         // الخبرة
-        total             : total,                     // المبلغ المؤدى
-        type_cas          : type,
-        montant_pour_rasm : montantPour,
-    };
-}
     function formatMoney(n) {
         return (Number(n) || 0).toLocaleString('fr-FR', {
             minimumFractionDigits: 2,

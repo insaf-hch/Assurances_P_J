@@ -359,6 +359,34 @@ tr:hover td { background: var(--sky-soft); }
                 <span class="nav-icon">📄</span> الوثائق المُنتجة
             </a>
         </nav>
+        <div style="padding: 0.5rem 1rem; margin-bottom: 0.25rem;">
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" style="
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.62rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 7px;
+            color: rgba(255,255,255,0.6);
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.13s;
+        "
+        onmouseover="this.style.background='rgba(231, 30, 30, 0.25)';this.style.color='#FCA5A5';this.style.borderColor='rgba(185,28,28,0.4)'"
+        onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.6)';this.style.borderColor='rgba(255,255,255,0.15)'">
+            <span style="font-size:1rem;width:20px;text-align:center;"></span>
+            تسجيل الخروج
+        </button>
+    </form>
+</div>
+
+
         <div class="sidebar-footer">نظام معالجة حوادث الشغل </div>
     </aside>
 
@@ -379,11 +407,58 @@ tr:hover td { background: var(--sky-soft); }
         <div class="content">
 
             @if(session('success'))
-                <div class="alert alert-success">✅ {{ session('success') }}</div>
-            @endif
-            @if($errors->any())
-                <div class="alert alert-error">❌ @foreach($errors->all() as $err) {{ $err }} @endforeach</div>
-            @endif
+<div id="toast-success" style="
+    position:fixed;top:1.2rem;left:1.2rem;z-index:9999;
+    background:var(--success-soft);border:1px solid #C0DD97;color:var(--success);
+    padding:0.75rem 1.2rem;border-radius:10px;font-size:0.83rem;font-weight:600;
+    display:flex;align-items:center;gap:0.5rem;
+    box-shadow:0 4px 16px rgba(91,128,97,0.18);
+    animation:slideInLeft 0.3s ease;
+">
+    ✅ {{ session('success') }}
+</div>
+<style>
+@keyframes slideInLeft {
+    from { opacity:0; transform:translateX(-30px); }
+    to   { opacity:1; transform:translateX(0); }
+}
+@keyframes slideOutLeft {
+    from { opacity:1; transform:translateX(0); }
+    to   { opacity:0; transform:translateX(-30px); }
+}
+</style>
+<script>
+setTimeout(function() {
+    var t = document.getElementById('toast-success');
+    if (t) {
+        t.style.animation = 'slideOutLeft 0.3s ease forwards';
+        setTimeout(function(){ t.remove(); }, 300);
+    }
+}, 9000);
+</script>
+@endif
+
+@if($errors->any())
+<div id="toast-error" style="
+    position:fixed;top:1.2rem;left:1.2rem;z-index:9999;
+    background:var(--error-soft);border:1px solid #FCA5A5;color:var(--error);
+    padding:0.75rem 1.2rem;border-radius:10px;font-size:0.83rem;font-weight:600;
+    display:flex;align-items:center;gap:0.5rem;
+    box-shadow:0 4px 16px rgba(185,28,28,0.13);
+    animation:slideInLeft 0.3s ease;
+">
+    ❌ @foreach($errors->all() as $err) {{ $err }} @endforeach
+</div>
+<script>
+setTimeout(function() {
+    var t = document.getElementById('toast-error');
+    if (t) {
+        t.style.animation = 'slideOutLeft 0.3s ease forwards';
+        setTimeout(function(){ t.remove(); }, 300);
+    }
+}, 9000);
+</script>
+@endif
 
             <div class="panels-grid">
 
@@ -558,10 +633,6 @@ tr:hover td { background: var(--sky-soft); }
 
                                         <td>
                                             <div class="actions-row">
-                                                <button type="button" class="btn btn-primary btn-sm"
-                                                        data-payload="{{ $payloadAttr }}"
-                                                        data-id="{{ $d->id }}"
-                                                        onclick="openCalcModal(this.dataset.id, this)">تسجيل</button>
 
                                                 <button type="button" class="btn btn-warning btn-sm"
                                                         onclick="openEditModalFromButton(this)"
@@ -581,8 +652,11 @@ tr:hover td { background: var(--sky-soft); }
                                                         data-type_malaf="{{ e($d->type_malaf) }}"
                                                         data-montant_taawidat="{{ $d->montant_taawidat ?? 0 }}"
                                                         data-montant_masarif_tibiya="{{ $d->montant_masarif_tibiya ?? 0 }}"
-                                                        data-beneficiaires="{{ json_encode($d->beneficiaires_json??[], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) }}">✏️</button>
-
+data-nizaat_darar="{{ $d->nizaat_darar ?? 0 }}"
+data-nizaat_ikhtar="{{ $d->nizaat_ikhtar ?? 0 }}"
+data-nizaat_otla="{{ $d->nizaat_otla ?? 0 }}"
+data-nizaat_aqdamiya="{{ $d->nizaat_aqdamiya ?? 0 }}"
+data-beneficiaires="{{ json_encode($d->beneficiaires_json??[], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) }}">✏️</button>
                                                 <form method="post" action="{{ route('dossiers.destroy', $d) }}"
                                                       onsubmit="return confirm('حذف هذا الملف؟');" style="display:inline;">
                                                     @csrf
@@ -798,14 +872,14 @@ tr:hover td { background: var(--sky-soft); }
             </div>
 
            <!-- ══ SECTION 2 : تفاصيل المبالغ ══ -->
-<div style="background:var(--sky-soft);border:1px solid var(--sky);border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
-    <div style="font-size:0.72rem;font-weight:700;color:var(--sky-dark);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+<div style="background:#FFF8EC;border:1px solid #E8C97A;border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+    <div style="font-size:0.72rem;font-weight:700;color:#92600A;margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
         <span>💰</span> تفاصيل المبلغ المؤدى
     </div>
     <div class="modal-form-grid">
         <div class="form-group" id="wrap_manual_montant_initial">
             <label>المبلغ</label>
-            <input type="number" step="0.01" min="0" name="montant" id="manual_montant" placeholder="203900 درهم" oninput="updateManualTotal()">
+            <input type="number" step="0.01" min="0" name="montant_initial" id="manual_montant" placeholder="203900 درهم" oninput="updateManualTotal()">
         </div>
         <div class="form-group" id="wrap_manual_taawidat">
             <label>تعويضات يومية</label>
@@ -834,19 +908,19 @@ tr:hover td { background: var(--sky-soft); }
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.5rem;">
                 <div class="form-group">
                     <label>الضرر</label>
-                    <input type="number" step="0.01" min="0" id="nizaat_darar" name="nizaat_darar" value="0" oninput="updateNizaatTotal()">
+                    <input type="number" step="0.01" min="0" id="nizaat_darar" value="0" oninput="syncNizaat('nizaat_darar',this.value); updateNizaatTotal()">
                 </div>
                 <div class="form-group">
                     <label>الإخطار</label>
-                    <input type="number" step="0.01" min="0" id="nizaat_ikhtar" name="nizaat_ikhtar" value="0" oninput="updateNizaatTotal()">
+                    <input type="number" step="0.01" min="0" id="nizaat_ikhtar" value="0" oninput="syncNizaat('nizaat_ikhtar',this.value); updateNizaatTotal()">
                 </div>
                 <div class="form-group">
                     <label>العطلة السنوية</label>
-                    <input type="number" step="0.01" min="0" id="nizaat_otla" name="nizaat_otla" value="0" oninput="updateNizaatTotal()">
+                    <input type="number" step="0.01" min="0" id="nizaat_otla" value="0" oninput="syncNizaat('nizaat_otla',this.value); updateNizaatTotal()">
                 </div>
                 <div class="form-group">
                     <label>الأقدمية</label>
-                    <input type="number" step="0.01" min="0" id="nizaat_aqdamiya" name="nizaat_aqdamiya" value="0" oninput="updateNizaatTotal()">
+                    <input type="number" step="0.01" min="0" id="nizaat_aqdamiya" value="0" oninput="syncNizaat('nizaat_aqdamiya',this.value); updateNizaatTotal()">
                 </div>
             </div>
             <div style="padding:0.5rem 0.75rem;background:#fff;border:1px solid var(--sky);border-radius:7px;font-size:0.8rem;color:var(--sky-dark);">
@@ -857,7 +931,7 @@ tr:hover td { background: var(--sky-soft); }
         <div class="form-group full" id="wrap_manual_total_preview" style="display:none">
             <label>💰 المبلغ الإجمالي</label>
             <input type="number" step="0.01" name="montant_calcul_total" id="manual_total_preview"
-                   style="background:#fff;border-color:var(--sky);font-weight:700;font-size:1rem;color:var(--sky-dark);" readonly>
+                   style="background:#fff;border-color:#E8C97A;font-weight:700;font-size:1rem;color:#92600A;"readonly>
             <span style="font-size:0.68rem;color:var(--text3);margin-top:2px;" id="manual_total_formula"></span>
         </div>
     </div>
@@ -876,20 +950,15 @@ tr:hover td { background: var(--sky-soft); }
                         <label>الساكن (ة) ب</label>
                         <input type="text" name="Adres_victime">
                     </div>
-                    <div class="form-group full">
-                        <label>النائب عنه (ا)</label>
-                        <input type="text" name="Avocat">
-                    </div>
-                    <div class="form-group full">
-                        <label>وصف الملف</label>
-                        <input type="text" name="type_malaf" placeholder="يظهر في عمود الملف">
-                    </div>
+                   
                 </div>
             </div>
-
+<input type="hidden" id="h_nizaat_darar"    name="nizaat_darar"    value="0">
+<input type="hidden" id="h_nizaat_ikhtar"   name="nizaat_ikhtar"   value="0">
+<input type="hidden" id="h_nizaat_otla"     name="nizaat_otla"     value="0">
+<input type="hidden" id="h_nizaat_aqdamiya" name="nizaat_aqdamiya" value="0">
             <!-- hidden field for custom company name -->
             <input type="hidden" name="nom_assurance_custom" id="manual_nom_assurance_custom">
-           <input type="hidden" name="montant_initial_nizaat" id="nizaat_montant_hidden"> 
 
             <div class="modal-actions">
                 <button type="button" class="btn btn-ghost"
@@ -907,53 +976,102 @@ tr:hover td { background: var(--sky-soft); }
             <button class="modal-close" onclick="closeEditModal()">✕</button>
         </div>
         <form id="editForm" method="post" action="">
-            @csrf
-            @method('PUT')
-            <div class="modal-form-grid">
-                <div class="form-group"><label>رقم الملف</label><input type="text" name="numero_dossier" id="edit_numero_dossier"></div>
-                <div class="form-group"><label>رقم الحكم</label><input type="text" name="numero_jugement" id="edit_numero_jugement"></div>
-                <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement" id="edit_date_jugement"></div>
-                <div class="form-group"><label>اسم المصاب</label><input type="text" name="nom_victime" id="edit_nom_victime"></div>
-                <div class="form-group"><label>شركة التأمين</label><input type="text" name="nom_assurance" id="edit_nom_assurance"></div>
-                
-                <!-- SECTION: المبلغ الأصلي + التعويضات + المصاريف الطبية -->
-                <div class="section-divider"><span>💰 تفاصيل المبلغ الأساسي</span></div>
-                
-                <div class="form-group"><label>المبلغ الأصلي</label><input type="number" step="0.01" name="montant_initial" id="edit_montant_initial"></div>
-                <div class="form-group"><label>التعويضات</label><input type="number" step="0.01" name="montant_taawidat" id="edit_montant_taawidat" value="0"></div>
-                <div class="form-group"><label>المصاريف الطبية</label><input type="number" step="0.01" name="montant_masarif_tibiya" id="edit_montant_masarif_tibiya" value="0"></div>
-                
-                <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" name="expertise" id="edit_expertise"></div>
-                <div class="form-group">
-                    <label>نوع الحالة</label>
-                    <select name="type_cas" id="edit_type_cas">
-                        <option value="">اختر النوع</option>
-                        <option value="irad_omri">إيراد عمري (×10)</option>
-                        <option value="irad_omri_ras_mal">إيراد عمري رأس مال</option>
-                        <option value="masdar_total_taawidat">رأسمال إجمالي + تعويضات</option>
-                        <option value="gharama_ijbariya">غرامة إجبارية</option>
-                        <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
-                        <option value="wafaya_ras_mal">وفاة — رأس مال</option>
-                    </select>
-                </div>
-                <div class="form-group full"><label>وصف الملف</label><input type="text" name="type_malaf" id="edit_type_malaf"></div>
-                <div class="form-group"><label>مصاريف العلاج</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="edit_montant_rasemal_ijmali"></div>
-                <div class="form-group"><label>تعويضات يومية</label><input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" id="edit_montant_taawidat_youmiya"></div>
-                <div class="form-group"><label>مصاريف الجنازة</label><input type="number" step="0.01" min="0" name="masarif_janaza" id="edit_masarif_janaza"></div>
-                <div class="form-group full" id="edit_benef_wrap">
-                    <label>مبالغ المستفيدين</label>
-                    <div id="edit_benef_list"></div>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="addEditBenefRow('')">+ مستفيد</button>
-                </div>
-                <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance" id="edit_adresse_assurance"></div>
+    @csrf
+    @method('PUT')
+
+    <!-- ══ SECTION 1 : المعلومات الأساسية ══ -->
+    <div style="background:var(--brown-soft);border:1px solid var(--brown-light);border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--brown);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+            <span>🗂️</span> المعلومات الأساسية
+        </div>
+        <div class="modal-form-grid">
+            <div class="form-group"><label>رقم الملف</label><input type="text" name="numero_dossier" id="edit_numero_dossier"></div>
+            <div class="form-group"><label>شركة المشغِّلة</label><input type="text" name="numero_jugement" id="edit_numero_jugement"></div>
+            <div class="form-group"><label>تاريخ القرار</label><input type="date" name="date_jugement" id="edit_date_jugement"></div>
+            <div class="form-group">
+                <label>نوع الحالة</label>
+<select name="type_cas" id="edit_type_cas" onchange="onEditTypeCasChange()">
+    <option value="">اختر النوع</option>
+    <option value="irad_omri">إيراد عمري (×10)</option>
+    <option value="irad_omri_ras_mal">إيراد عمري رأسمال</option>
+    <option value="masdar_total_taawidat">رأسمال إجمالي + تعويضات</option>
+    <option value="gharama_ijbariya">غرامة إجبارية</option>
+    <option value="nizaat_shughl">نزاعات الشغل</option>
+    <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
+    <option value="wafaya_ras_mal">وفاة — رأسمال</option>
+</select>
             </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-ghost" onclick="closeEditModal()">إلغاء</button>
-                <button type="submit" class="btn btn-success">💾 حفظ التعديلات</button>
-            </div>
-        </form>
+           
+        </div>
+    </div>
+
+    <!-- ══ SECTION 2 : تفاصيل المبالغ ══ -->
+    <div style="background:var(--sky-soft);border:1px solid var(--sky);border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--sky-dark);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+            <span>💰</span> تفاصيل المبلغ المؤدى
+        </div>
+        <div class="modal-form-grid">
+            <div class="form-group" id="edit_wrap_montant"><label>المبلغ</label><input type="number" step="0.01" name="montant_initial" id="edit_montant_initial" oninput="updateEditPreview()"></div>
+            <div class="form-group" id="edit_wrap_taawidat"><label>التعويضات</label><input type="number" step="0.01" name="montant_taawidat" id="edit_montant_taawidat" value="0" oninput="updateEditPreview()"></div>
+            <div class="form-group" id="edit_wrap_masarif"><label>المصاريف الطبية</label><input type="number" step="0.01" name="montant_masarif_tibiya" id="edit_montant_masarif_tibiya" value="0" oninput="updateEditPreview()"></div>
+            <div class="form-group"><label>الخبرة</label><input type="number" step="0.01" name="expertise" id="edit_expertise" oninput="updateEditPreview()"></div>
+            <div class="form-group" id="edit_wrap_rasemal" style="display:none"><label>رأسمال إجمالي</label><input type="number" step="0.01" min="0" name="montant_rasemal_ijmali" id="edit_montant_rasemal_ijmali" oninput="updateEditPreview()"></div>
+            <div class="form-group" id="edit_wrap_taawidat_youmiya" style="display:none"><label>تعويضات يومية</label><input type="number" step="0.01" min="0" name="montant_taawidat_youmiya" id="edit_montant_taawidat_youmiya" oninput="updateEditPreview()"></div>
+            <div class="form-group full" id="edit_wrap_janaza" style="display:none"><label>مصاريف الجنازة</label><input type="number" step="0.01" min="0" name="masarif_janaza" id="edit_masarif_janaza" value="0" oninput="updateEditPreview()"></div>
+           <div class="form-group full" id="edit_wrap_nizaat" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.5rem;">
+        <div class="form-group">
+            <label>الضرر</label>
+            <input type="number" step="0.01" min="0" name="nizaat_darar" id="edit_nizaat_darar" value="0" oninput="updateEditPreview()">
+        </div>
+        <div class="form-group">
+            <label>الإخطار</label>
+            <input type="number" step="0.01" min="0" name="nizaat_ikhtar" id="edit_nizaat_ikhtar" value="0" oninput="updateEditPreview()">
+        </div>
+        <div class="form-group">
+            <label>العطلة السنوية</label>
+            <input type="number" step="0.01" min="0" name="nizaat_otla" id="edit_nizaat_otla" value="0" oninput="updateEditPreview()">
+        </div>
+        <div class="form-group">
+            <label>الأقدمية</label>
+            <input type="number" step="0.01" min="0" name="nizaat_aqdamiya" id="edit_nizaat_aqdamiya" value="0" oninput="updateEditPreview()">
+        </div>
     </div>
 </div>
+<div class="form-group full" id="edit_wrap_benef" style="display:none">
+    <label id="edit_benef_label">مبالغ المستفيدين</label>
+    <div id="edit_benef_list"></div>
+    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.4rem;" onclick="addEditBenefRow('')">+ مستفيد</button>
+</div>
+            <!-- معاينة المبلغ المؤدى -->
+            <div class="form-group full" id="edit_wrap_preview" style="display:none">
+                <label>📊 معاينة المبلغ المؤدى</label>
+                <input type="text" id="edit_preview_total" readonly
+                       style="background:#fff;border-color:var(--sky);font-weight:700;font-size:1rem;color:var(--sky-dark);">
+                <span style="font-size:0.68rem;color:var(--text3);margin-top:2px;" id="edit_preview_formula"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SECTION 3 : المعلومات الشخصية ══ -->
+    <div style="background:var(--success-soft);border:1px solid #C0DD97;border-radius:9px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--success);margin-bottom:0.65rem;display:flex;align-items:center;gap:0.4rem;">
+            <span>👤</span> المعلومات الشخصية
+        </div>
+        <div class="modal-form-grid">
+            <div class="form-group"><label>اسم المصاب</label><input type="text" name="nom_victime" id="edit_nom_victime"></div>
+            <div class="form-group"><label>شركة التأمين</label><input type="text" name="nom_assurance" id="edit_nom_assurance"></div>
+            <div class="form-group full"><label>عنوان الشركة</label><input type="text" name="adresse_assurance" id="edit_adresse_assurance"></div>
+        </div>
+    </div>
+
+    <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeEditModal()">إلغاء</button>
+        <button type="submit" class="btn btn-success">💾 حفظ التعديلات</button>
+    </div>
+</form>
+    </div><!-- /.modal -->
+</div><!-- /#editModal .modal-overlay -->
 
 <!-- ═══ SCRIPTS ═══════════════════════════════════════════════ -->
 <script src="{{ asset('js/dossier-calc.js') }}"></script>
@@ -972,12 +1090,14 @@ function filterDossierTable(q) {
 
 /* ── Format ── */
 function fmt(n) { return (Math.round(parseFloat(n) * 100) / 100).toFixed(2); }
-
+function syncNizaat(field, val) {
+    document.getElementById('h_' + field).value = val || '0';
+}
 /* ── Breakdown table ── */
 function fillBreakdownTable(b) {
     var tb = document.getElementById('breakdownBody');
     var rows;
-    
+
     if (b.type_cas === 'nizaat_shughl') {
         rows = [
             ['الضرر',           b.nizaat_darar    || 0],
@@ -990,20 +1110,32 @@ function fillBreakdownTable(b) {
             ['رسم البحث',       b.rasm_bahth],
             ['المبلغ المؤدى',   b.total],
         ];
+    } else if (b.type_cas === 'wafaya_irad_omri' || b.type_cas === 'wafaya_ras_mal') {
+        rows = [
+            ['مجموع المستفيدين', b.montant],
+            ['مصاريف الجنازة',   b.masarif_janaza],
+            ['المجموع',          b.montant_original],
+            ['الرسم القضائي',    b.rasm_qadai],
+            ['حقوق المرافعة',    b.rusum_murafaa],
+            ['رسم البحث',        b.rasm_bahth],
+            ['الخبرة',           b.expertise],
+            ['المبلغ المؤدى',    b.total],
+        ];
     } else {
         rows = [
             ['المبلغ',           b.montant],
             ['التعويضات',        b.montant_taawidat || 0],
             ['المصاريف الطبية',  b.montant_masarif_tibiya || 0],
-            ['مصاريف الجنازة',  b.masarif_janaza],
             ['المجموع',          b.montant_original],
             ['الرسم القضائي',    b.rasm_qadai],
-            ['حقوق المرافعة',   b.rusum_murafaa],
+            ['حقوق المرافعة',    b.rusum_murafaa],
             ['رسم البحث',        b.rasm_bahth],
             ['الخبرة',           b.expertise],
             ['المبلغ المؤدى',    b.total],
         ];
     }
+    // ... reste identique
+
 
     tb.innerHTML = rows.map(function(r) {
         var isTotal  = r[0] === 'المبلغ المؤدى';
@@ -1221,39 +1353,52 @@ document.querySelector('#manualModal form').addEventListener('submit', function(
 });
 
 function onManualTypeCasChange() {
-    var type      = document.getElementById('manual_type_cas').value;
-    var isWafa    = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
-    var isFoisDix = type === 'wafaya_irad_omri';
-    var isNizaat  = type === 'nizaat_shughl';
+    var type     = document.getElementById('manual_type_cas').value;
+    var isWafa   = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
+    var isFoisDix= type === 'wafaya_irad_omri';
+    var isNizaat = type === 'nizaat_shughl';
 
-    // Champs standards — cachés si wafat ou nizaat
     document.getElementById('wrap_manual_montant_initial').style.display = (isWafa || isNizaat) ? 'none' : '';
     document.getElementById('wrap_manual_taawidat').style.display        = (isWafa || isNizaat) ? 'none' : '';
     document.getElementById('wrap_manual_masarif').style.display         = (isWafa || isNizaat) ? 'none' : '';
     document.getElementById('wrap_manual_expertise').style.display       = isNizaat ? 'none' : '';
 
-    // Champs wafat
+    // ✅ Vider les valeurs au lieu de disabled
+if (isWafa || isNizaat) {
+    document.getElementById('manual_montant').value = '';
+    document.getElementById('manual_montant_taawidat').value = '';
+    document.getElementById('manual_montant_masarif_tibiya').value = '';
+}
+
     document.getElementById('wrap_manual_janaza').style.display = isWafa ? '' : 'none';
     document.getElementById('wrap_manual_benef').style.display  = isWafa ? '' : 'none';
+   // Afficher/cacher visuellement
+document.getElementById('wrap_manual_nizaat').style.display = isNizaat ? '' : 'none';
 
-    // Champs nizaat
-    document.getElementById('wrap_manual_nizaat').style.display = isNizaat ? '' : 'none';
+// ✅ Changer le type pour forcer l'envoi même si caché
+var nizaatFields = ['nizaat_darar','nizaat_ikhtar','nizaat_otla','nizaat_aqdamiya'];
+nizaatFields.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (isNizaat) {
+        el.type = 'number';
+    } else {
+        el.value = '0'; // reset à 0 si pas nizaat
+    }
+});
 
-    // Label bénéficiaires
     document.getElementById('manual_benef_label').textContent = isFoisDix
         ? 'مبالغ المستفيدين (كل مبلغ × 10)'
         : 'مبالغ المستفيدين';
 
-    // Bénéficiaires par défaut
     if (isWafa && document.getElementById('manual_benef_list').children.length === 0) {
-        addManualBenefRow();
-        addManualBenefRow();
+        addManualBenefRow(); addManualBenefRow();
     }
     if (!isWafa) document.getElementById('manual_benef_list').innerHTML = '';
 
     if (isNizaat) updateNizaatTotal();
     updateManualTotal();
 }
+
 function updateNizaatTotal() {
     var darar    = parseFloat(document.getElementById('nizaat_darar').value)    || 0;
     var ikhtar   = parseFloat(document.getElementById('nizaat_ikhtar').value)   || 0;
@@ -1261,17 +1406,17 @@ function updateNizaatTotal() {
     var aqdamiya = parseFloat(document.getElementById('nizaat_aqdamiya').value) || 0;
     var sum = darar + ikhtar + otla + aqdamiya;
 
-    document.getElementById('nizaat_sum_preview').textContent = sum.toFixed(2);
-    
-    // ← Mettre à jour le hidden field montant_initial
-    var hidden = document.getElementById('nizaat_montant_hidden');
-    if (hidden) hidden.value = sum.toFixed(2);
+    // ✅ Sync hidden fields
+    document.getElementById('h_nizaat_darar').value    = darar;
+    document.getElementById('h_nizaat_ikhtar').value   = ikhtar;
+    document.getElementById('h_nizaat_otla').value     = otla;
+    document.getElementById('h_nizaat_aqdamiya').value = aqdamiya;
 
-    // ← Mettre à jour aussi manual_total_preview
+    // reste du code existant...
+    document.getElementById('nizaat_sum_preview').textContent = sum.toFixed(2);
     var wrapPreview = document.getElementById('wrap_manual_total_preview');
     var inputTotal  = document.getElementById('manual_total_preview');
     var formulaSpan = document.getElementById('manual_total_formula');
-    
     inputTotal.value = sum.toFixed(2);
     var parts = [];
     if (darar)    parts.push('الضرر: '          + darar.toFixed(2));
@@ -1361,29 +1506,120 @@ function updateManualTotal() {
 
 /* ── Edit modal ── */
 function clearEditBenefList() { var b=document.getElementById('edit_benef_list'); if(b) b.innerHTML=''; }
+
 function addEditBenefRow(val) {
-    val = val==null ? '' : val;
-    var box=document.getElementById('edit_benef_list'); if(!box) return;
-    var d=document.createElement('div'); d.style.marginBottom='0.3rem';
-    d.innerHTML='<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="'+String(val).replace(/"/g,'&quot;')+'">';
+    val = val == null ? '' : val;
+    var box = document.getElementById('edit_benef_list'); if (!box) return;
+    var idx = box.children.length + 1;
+    var d = document.createElement('div');
+    d.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.38rem;';
+    d.innerHTML = '<span style="font-size:0.72rem;color:var(--text3);min-width:65px;">مستفيد ' + idx + '</span>'
+        + '<input type="number" step="0.01" min="0" name="beneficiaires[][montant]" value="' + String(val).replace(/"/g, '&quot;') + '" style="flex:1;" oninput="updateEditPreview()">'
+        + '<button type="button" onclick="this.closest(\'div\').remove();updateEditPreview();" style="background:var(--error);color:#fff;border:none;border-radius:5px;padding:0.22rem 0.45rem;cursor:pointer;font-size:0.78rem;">✕</button>';
     box.appendChild(d);
+    updateEditPreview();
 }
-function openEditModalFromButton(el) {
-    document.getElementById('editForm').action = BASE+'/dossiers/'+el.dataset.id;
-    ['numero_dossier','numero_jugement','date_jugement','nom_victime','nom_assurance',
-     'adresse_assurance','montant_initial','expertise','type_cas','type_malaf',
-     'montant_rasemal_ijmali','montant_taawidat_youmiya','masarif_janaza','montant_taawidat','montant_masarif_tibiya'].forEach(function(k){
-        var val = el.dataset[k] || '';
-        var input = document.getElementById('edit_'+k);
-        if(input) input.value = val;
+function onEditTypeCasChange() {
+    var type     = document.getElementById('edit_type_cas').value;
+    var isWafa   = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
+    var isMasd   = type === 'masdar_total_taawidat';
+    var isNizaat = type === 'nizaat_shughl';
+
+document.getElementById('edit_wrap_montant').style.display          = (isWafa || isNizaat) ? 'none' : '';
+document.getElementById('edit_wrap_taawidat').style.display         = (isWafa || isMasd || isNizaat) ? 'none' : '';
+document.getElementById('edit_wrap_masarif').style.display          = (isWafa || isMasd || isNizaat) ? 'none' : '';
+document.getElementById('edit_expertise').closest('.form-group').style.display = isNizaat ? 'none' : '';
+    document.getElementById('edit_wrap_rasemal').style.display          = isMasd ? '' : 'none';
+    document.getElementById('edit_wrap_taawidat_youmiya').style.display = isMasd ? '' : 'none';
+    document.getElementById('edit_wrap_janaza').style.display           = isWafa ? '' : 'none';
+    document.getElementById('edit_wrap_benef').style.display            = isWafa ? '' : 'none';
+    document.getElementById('edit_wrap_nizaat').style.display           = isNizaat ? '' : 'none';
+
+    document.getElementById('edit_benef_label').textContent = type === 'wafaya_irad_omri'
+        ? 'مبالغ المستفيدين (كل مبلغ × 10)'
+        : 'مبالغ المستفيدين';
+
+    if (isWafa && document.getElementById('edit_benef_list').children.length === 0) {
+        addEditBenefRow(''); addEditBenefRow('');
+    }
+    if (!isWafa) clearEditBenefList();
+    updateEditPreview();
+}
+
+function updateEditPreview() {
+    if (!window.DossierCalc) return;
+    var type   = document.getElementById('edit_type_cas').value;
+    var isWafa = type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal';
+    var isMasd = type === 'masdar_total_taawidat';
+
+    var ben = [];
+    document.querySelectorAll('#edit_benef_list input[name^="beneficiaires"]').forEach(function(i) {
+        ben.push({ montant: parseFloat(i.value) || 0 });
     });
+
+ var payload = {
+    type_cas                : type,
+    montant_initial         : parseFloat(document.getElementById('edit_montant_initial').value) || 0,
+    montant_taawidat        : parseFloat(document.getElementById('edit_montant_taawidat').value) || 0,
+    montant_masarif_tibiya  : parseFloat(document.getElementById('edit_montant_masarif_tibiya').value) || 0,
+    montant_rasemal_ijmali  : parseFloat(document.getElementById('edit_montant_rasemal_ijmali').value) || 0,
+    montant_taawidat_youmiya: parseFloat(document.getElementById('edit_montant_taawidat_youmiya').value) || 0,
+    masarif_janaza          : parseFloat(document.getElementById('edit_masarif_janaza').value) || 0,
+    expertise               : parseFloat(document.getElementById('edit_expertise').value) || 0,
+    beneficiaires_json      : ben,
+    nizaat_darar            : parseFloat(document.getElementById('edit_nizaat_darar')?.value) || 0,
+    nizaat_ikhtar           : parseFloat(document.getElementById('edit_nizaat_ikhtar')?.value) || 0,
+    nizaat_otla             : parseFloat(document.getElementById('edit_nizaat_otla')?.value) || 0,
+    nizaat_aqdamiya         : parseFloat(document.getElementById('edit_nizaat_aqdamiya')?.value) || 0,
+};
+
+    var b = window.DossierCalc.buildBreakdown(payload);
+
+    var wrapPreview  = document.getElementById('edit_wrap_preview');
+    var inputTotal   = document.getElementById('edit_preview_total');
+    var formulaSpan  = document.getElementById('edit_preview_formula');
+
+    inputTotal.value = fmt(b.total) + ' درهم — المجموع: ' + fmt(b.montant_original) + ' درهم';
+
+    var parts = [];
+    if (b.rasm_qadai)   parts.push('رسم قضائي: ' + fmt(b.rasm_qadai));
+    if (b.rusum_murafaa)parts.push('مرافعة: '    + fmt(b.rusum_murafaa));
+    if (b.rasm_bahth)   parts.push('بحث: '       + fmt(b.rasm_bahth));
+    if (b.expertise)    parts.push('خبرة: '      + fmt(b.expertise));
+    formulaSpan.textContent = parts.join(' + ') + ' = ' + fmt(b.total) + ' درهم';
+
+    wrapPreview.style.display = type ? '' : 'none';
+}
+
+function openEditModalFromButton(el) {
+    document.getElementById('editForm').action = BASE + '/dossiers/' + el.dataset.id;
+
+    ['numero_dossier','numero_jugement','date_jugement','nom_victime','nom_assurance',
+ 'adresse_assurance','montant_initial','expertise','type_cas','type_malaf',
+ 'montant_rasemal_ijmali','montant_taawidat_youmiya','masarif_janaza',
+ 'montant_taawidat','montant_masarif_tibiya',
+ 'nizaat_darar','nizaat_ikhtar','nizaat_otla','nizaat_aqdamiya'].forEach(function(k) {
+        var val   = el.dataset[k] || '';
+        var input = document.getElementById('edit_' + k);
+        if (input) input.value = val;
+    });
+
     clearEditBenefList();
     var benRaw = el.getAttribute('data-beneficiaires');
-    if (benRaw) { try { var arr=JSON.parse(benRaw); if(Array.isArray(arr)) arr.forEach(function(r){ addEditBenefRow(r&&r.montant!=null?r.montant:''); }); } catch(e){} }
+    if (benRaw) {
+        try {
+            var arr = JSON.parse(benRaw);
+            if (Array.isArray(arr)) arr.forEach(function(r) {
+                addEditBenefRow(r && r.montant != null ? r.montant : '');
+            });
+        } catch(e) {}
+    }
+
+    onEditTypeCasChange();
     document.getElementById('editModal').classList.add('open');
 }
-function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
 
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
 /* ── Close modal on backdrop click ── */
 document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
     overlay.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
