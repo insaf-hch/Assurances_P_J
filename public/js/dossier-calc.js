@@ -19,56 +19,68 @@
 
     function montantPourRasm(state) {
         var type = state.type_cas || 'autre';
-        var mi  = parseFloat(state.montant_initial) || 0;
-        var mri = parseFloat(state.montant_rasemal_ijmali) || 0;
-        var mty = parseFloat(state.montant_taawidat_youmiya) || 0;
-        var ben = state.beneficiaires_json;
+        var mi   = parseFloat(state.montant_initial) || 0;
+        var mri  = parseFloat(state.montant_rasemal_ijmali) || 0;
+        var mty  = parseFloat(state.montant_taawidat_youmiya) || 0;
+        var ben  = state.beneficiaires_json;
 
         switch (type) {
-            case 'irad_omri':
-                return round2(mi * 10);
 
-            case 'irad_omri_ras_mal':
-                return round2(mi);
+          case 'irad_omri': {
+    var tib = parseFloat(state.montant_masarif_tibiya) || 0;  // montant_masarif_tibiya
+    var tyd = parseFloat(state.montant_taawidat_youmiya) || 0; // montant_taawidat_youmiya
+    var taa = parseFloat(state.montant_taawidat) || 0;         // montant_taawidat ✅
+    return round2((mi * 10) + tib + tyd + taa);
+}
+
+case 'irad_omri_ras_mal': {
+    var tib = parseFloat(state.montant_masarif_tibiya) || 0;   // montant_masarif_tibiya
+    var tyd = parseFloat(state.montant_taawidat_youmiya) || 0; // montant_taawidat_youmiya
+    var taa = parseFloat(state.montant_taawidat) || 0;         // montant_taawidat ✅
+    return round2(mi + tib + tyd + taa);
+}
 
             case 'masdar_total_taawidat': {
-    var mi2       = parseFloat(state.montant_initial)        || 0; // المبلغ = 203900
-    var mty2      = parseFloat(state.montant_taawidat_youmiya) || 0; // تعويضات يومية = 4900
-    var tibiya2   = parseFloat(state.montant_masarif_tibiya) || 0; // المصاريف الطبية = 13900
-
-    // Base = المبلغ + تعويضات يومية + المصاريف الطبية
-    return round2(mi2 + mty2 + tibiya2);
-}
+                var tib  = parseFloat(state.montant_masarif_tibiya) || 0;
+                var taa  = parseFloat(state.montant_taawidat) || 0;
+                var tyd  = parseFloat(state.montant_taawidat_youmiya) || 0;
+                return round2(mi + tib + taa + tyd);
+            }
 
             case 'gharama_ijbariya':
                 return round2(mi);
 
             case 'wafaya_irad_omri': {
-                // BUG FIX: الرسم القضائي يحسب على المجموع (مستفيدون + جنازة)
                 var benSum = sommeBeneficiaires(ben, true);
                 var janaza = parseFloat(state.masarif_janaza) || 0;
                 return round2(benSum + janaza);
             }
 
             case 'wafaya_ras_mal': {
-                // BUG FIX: الرسم القضائي يحسب على المجموع (مستفيدون + جنازة)
                 var benSum = sommeBeneficiaires(ben, false);
                 var janaza = parseFloat(state.masarif_janaza) || 0;
                 return round2(benSum + janaza);
             }
 
-            case 'nizaat_shughl':
+            case 'nizaat_shughl': {
                 var darar    = parseFloat(state.nizaat_darar)    || 0;
                 var ikhtar   = parseFloat(state.nizaat_ikhtar)   || 0;
                 var otla     = parseFloat(state.nizaat_otla)     || 0;
                 var aqdamiya = parseFloat(state.nizaat_aqdamiya) || 0;
                 return round2(darar + ikhtar + otla + aqdamiya);
+            }
 
-            default:
-                if (mri > 0 || mty > 0) {
-                    return round2(mri + mty);
-                }
-                return round2(mi);
+            default: {
+    var taa = parseFloat(state.montant_taawidat) || 0;
+    var tib = parseFloat(state.montant_masarif_tibiya) || 0;
+    var mty = parseFloat(state.montant_taawidat_youmiya) || 0;
+    var mri = parseFloat(state.montant_rasemal_ijmali) || 0;
+    if (mri > 0) {
+        return round2(mri + mty + taa + tib);
+    }
+    // ✅ يجمع كل التعويضات
+    return round2(mi + taa + mty + tib);
+}
         }
     }
 
@@ -81,73 +93,81 @@
     }
 
     function buildBreakdown(state) {
-        var type         = state.type_cas || 'autre';
-        var montantPour  = montantPourRasm(state);  // المجموع (base pour الرسم القضائي)
-        var rasm         = rasmQadai(montantPour);
+        var type        = state.type_cas || 'autre';
+        var montantPour = montantPourRasm(state);
+        var rasm        = rasmQadai(montantPour);
+
+        var mi           = parseFloat(state.montant_initial) || 0;
         var expertise    = parseFloat(state.expertise) || 0;
         var rusumMurafaa = 10;
         var rasmBahth    = type === 'gharama_ijbariya' ? 0 : 20;
         var janaza       = (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal')
                             ? parseFloat(state.masarif_janaza) || 0
                             : 0;
-
-        var taawidat      = parseFloat(state.montant_taawidat)       || 0;
+        var taawidat      = parseFloat(state.montant_taawidat) || 0;
         var masarifTibiya = parseFloat(state.montant_masarif_tibiya) || 0;
+        var taawidatYoumiya = parseFloat(state.montant_taawidat_youmiya) || 0;
+        
+        var total = round2( rasm + rusumMurafaa + rasmBahth + expertise);
 
-        // BUG FIX: المبلغ المؤدى = frais judiciaires SEULEMENT (sans janaza)
-        // janaza est déjà dans المجموع, elle ne doit pas s'ajouter au total des frais
-        var total = round2(rasm + rusumMurafaa + rasmBahth + expertise);
+        
 
-        // ── montant affiché dans la ligne "المبلغ" / "مجموع المستفيدين" ──
-        var montantAfficheOriginal;
+        // ── المبلغ المعروض في السطر الأول ──
+        var montantAffiche;
+        var majmou;
 
         if (type === 'nizaat_shughl') {
             var darar    = parseFloat(state.nizaat_darar)    || 0;
             var ikhtar   = parseFloat(state.nizaat_ikhtar)   || 0;
             var otla     = parseFloat(state.nizaat_otla)     || 0;
             var aqdamiya = parseFloat(state.nizaat_aqdamiya) || 0;
-            montantAfficheOriginal = round2(darar + ikhtar + otla + aqdamiya);
+            montantAffiche = round2(darar + ikhtar + otla + aqdamiya);
+            majmou         = montantAffiche;
 
+} else if (type === 'irad_omri') {
+    montantAffiche = round2(mi * 10);
+    majmou = round2(montantAffiche + masarifTibiya + taawidatYoumiya + taawidat); // ✅ + taawidat
+
+} else if (type === 'irad_omri_ras_mal') {
+    montantAffiche = round2(mi);
+    majmou = round2(montantAffiche + masarifTibiya + taawidatYoumiya + taawidat); // ✅ + taawidat
         } else if (type === 'masdar_total_taawidat') {
-            montantAfficheOriginal = round2(
-                (parseFloat(state.montant_rasemal_ijmali) || 0) +
-                (parseFloat(state.montant_taawidat_youmiya) || 0)
-            );
-        } else if (type === 'wafaya_irad_omri') {
-            // Afficher uniquement la somme des bénéficiaires (sans janaza)
-            montantAfficheOriginal = sommeBeneficiaires(state.beneficiaires_json, true);
-        } else if (type === 'wafaya_ras_mal') {
-            // Afficher uniquement la somme des bénéficiaires (sans janaza)
-            montantAfficheOriginal = sommeBeneficiaires(state.beneficiaires_json, false);
-        } else {
-            montantAfficheOriginal = round2(parseFloat(state.montant_initial) || 0);
-        }
+            montantAffiche = mi;
+            majmou         = round2(mi + taawidat + masarifTibiya + taawidatYoumiya);
 
-        // ── المجموع ──
-        var majmou;
-        if (type === 'nizaat_shughl') {
-            majmou = montantAfficheOriginal;
-        } else if (type === 'wafaya_irad_omri' || type === 'wafaya_ras_mal') {
-            // BUG FIX: المجموع = مجموع المستفيدين + مصاريف الجنازة
-            majmou = round2(montantAfficheOriginal + janaza);
+        } else if (type === 'wafaya_irad_omri') {
+            montantAffiche = sommeBeneficiaires(state.beneficiaires_json, true);
+            majmou         = round2(montantAffiche + janaza);
+
+        } else if (type === 'wafaya_ras_mal') {
+            montantAffiche = sommeBeneficiaires(state.beneficiaires_json, false);
+            majmou         = round2(montantAffiche + janaza);
+
         } else {
-            majmou = round2(montantAfficheOriginal + taawidat + masarifTibiya + janaza);
+            // autre/default
+            var mri = parseFloat(state.montant_rasemal_ijmali) || 0;
+            var mty = parseFloat(state.montant_taawidat_youmiya) || 0;
+            if (mri > 0 || mty > 0) {
+                montantAffiche = round2(mri + mty + taawidat + masarifTibiya);
+            } else {
+                montantAffiche = round2(mi + taawidat + masarifTibiya);
+            }
+            majmou = montantAffiche; // ✅ لا مضاعفة
         }
 
         return {
-            montant               : montantAfficheOriginal,
+            montant               : montantAffiche,
             montant_taawidat      : taawidat,
             montant_masarif_tibiya: masarifTibiya,
             masarif_janaza        : round2(janaza),
-            montant_original      : majmou,          // المجموع
-            rasm_qadai            : rasm,             // 2.5% × majmou
+            montant_original      : majmou,
+            rasm_qadai            : rasm,
             rusum_murafaa         : rusumMurafaa,
             rasm_bahth            : rasmBahth,
             expertise             : round2(expertise),
-            total                 : total,            // المبلغ المؤدى (frais seulement)
+            total                 : total,
             type_cas              : type,
             montant_pour_rasm     : montantPour,
-            // champs nizaat exposés pour fillBreakdownTable
             nizaat_darar          : parseFloat(state.nizaat_darar)    || 0,
             nizaat_ikhtar         : parseFloat(state.nizaat_ikhtar)   || 0,
             nizaat_otla           : parseFloat(state.nizaat_otla)     || 0,

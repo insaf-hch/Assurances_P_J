@@ -72,7 +72,7 @@ body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); c
 .logo-sub  { font-size: 0.65rem; color: rgba(255,255,255,0.55); font-weight: 400; }
 .sidebar-nav { padding: 0.75rem 0; flex: 1; }
 .nav-label {
-    font-size: 0.6rem; font-weight: 700;
+    font-size: 1rem; font-weight: 800;
     color: rgba(255,255,255,0.38);
     letter-spacing: 0.13em;
     padding: 0.8rem 1.3rem 0.35rem;
@@ -449,6 +449,7 @@ setTimeout(function() {
 ">
     ❌ @foreach($errors->all() as $err) {{ $err }} @endforeach
 </div>
+
 <script>
 setTimeout(function() {
     var t = document.getElementById('toast-error');
@@ -547,6 +548,8 @@ setTimeout(function() {
                                                     'masarif_janaza'          => (float) $d->masarif_janaza,
                                                     'expertise'               => (float) $d->expertise,
                                                     'beneficiaires_json'      => $d->beneficiaires_json ?? [],
+                                                     'montant_taawidat'        => (float) ($d->montant_taawidat ?? 0),
+                                                     'montant_masarif_tibiya'  => (float) ($d->montant_masarif_tibiya ?? 0),
                                                     // ← ajouter
                                                     'nizaat_darar'            => (float) ($d->nizaat_darar ?? 0),
                                                     'nizaat_ikhtar'           => (float) ($d->nizaat_ikhtar ?? 0),
@@ -606,22 +609,22 @@ setTimeout(function() {
                                             {{ number_format((float)$d->montant_initial, 2, '.', ',') }}
                                         </td>
 
-                                        <td>
-                                            @if($d->calcul)
+                                      
+ <td>
+                                            @if(!$d->type_cas)
+                                                <span style="font-size:0.7rem;color:var(--warning);background:var(--warning-soft);padding:0.18rem 0.5rem;border-radius:5px;font-weight:600;">⚠️ اختر نوع الحالة</span>
+                                            @elseif($d->calcul)
                                                 <button type="button" class="btn btn-ghost btn-sm"
                                                         data-id="{{ $d->id }}"
                                                         onclick="openBreakdownServer(this.dataset.id)">
                                                     <span dir="ltr">{{ number_format((float)$d->calcul->total, 2, '.', ',') }}</span>
                                                 </button>
-                                            @elseif($d->type_cas)
+                                            @else
                                                 <button type="button" class="btn btn-ghost btn-sm"
                                                         data-payload="{{ $payloadAttr }}"
                                                         onclick="openBreakdownPreview(this)">معاينة</button>
-                                            @else
-                                                <span style="color:var(--text3);">—</span>
                                             @endif
                                         </td>
-
                                         <td>
                                             @if($d->calcul)
                                                 <a class="btn btn-ghost btn-sm" target="_blank" href="{{ route('dossiers.print.istidaa', $d) }}">استدعاء</a>
@@ -731,11 +734,11 @@ data-beneficiaires="{{ json_encode($d->beneficiaires_json??[], JSON_HEX_TAG|JSON
                     <label>نوع الملف (الحالة)</label>
                     <select name="type_cas" id="calc_type_cas" required onchange="toggleCalcExtra()">
                         <option value="irad_omri">إيراد عمري (×10)</option>
-                        <option value="irad_omri_ras_mal">إيراد عمري محول إلى رأس مال</option>
+                        <option value="irad_omri_ras_mal">إيراد عمري محول إلى رأسمال</option>
                         <option value="masdar_total_taawidat">رأسمال إجمالي + تعويضات يومية</option>
                         <option value="gharama_ijbariya">غرامة إجبارية</option>
                         <option value="wafaya_irad_omri">وفاة — إيراد عمري (مستفيدون)</option>
-                        <option value="wafaya_ras_mal">وفاة — رأس مال (مستفيدون)</option>
+                        <option value="wafaya_ras_mal">وفاة — رأسمال (مستفيدون)</option>
                     </select>
                 </div>
                 <div class="form-group full">
@@ -828,12 +831,12 @@ data-beneficiaires="{{ json_encode($d->beneficiaires_json??[], JSON_HEX_TAG|JSON
                         <select name="type_cas" id="manual_type_cas" onchange="onManualTypeCasChange()">
                             <option value="">—</option>
                             <option value="irad_omri">إيراد عمري</option>
-                            <option value="irad_omri_ras_mal">رأس مال</option>
+                            <option value="irad_omri_ras_mal">رأسمال</option>
                             <option value="masdar_total_taawidat">رأسمال + تعويضات</option>
                             <option value="gharama_ijbariya">غرامة إجبارية</option>
                             <option value="nizaat_shughl">نزاعات الشغل</option>
                             <option value="wafaya_irad_omri">وفاة — إيراد عمري</option>
-                            <option value="wafaya_ras_mal">وفاة — رأس مال</option>
+                            <option value="wafaya_ras_mal">وفاة — رأسمال</option>
                         </select>
                     </div>
                     <!-- شركة التأمين -->

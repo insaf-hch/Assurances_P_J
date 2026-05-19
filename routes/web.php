@@ -21,7 +21,12 @@ Route::post('/logout',
 [AuthController::class, 'logout'])
 ->name('logout');
 
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+// ✅ Version correcte (GET en premier, POST sans nom)
+Route::get('/login', function () {
+    return view('accueil');
+})->name('login');
+
+Route::post('/login', [AuthController::class, 'login']); 
 
 Route::post('/upload', [DossierController::class, 'upload'])->name('upload');
 Route::post('/manual/store', [ManualController::class, 'store'])->name('manual.store');

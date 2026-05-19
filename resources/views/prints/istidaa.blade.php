@@ -117,7 +117,7 @@
         </div>
 
         <div class="stars">****</div>
-        <div class="exec-order"><strong>أمــــر تنفيذي:</strong>  <b style="color:green;">{{ $calcul->numero_amr_tanfidhi }}</b></div>
+        <div class="exec-order"><strong>أمــــر تنفيذي:</strong>  <b >{{ $calcul->numero_amr_tanfidhi }}</b></div>
         <div class="summon">استدعـــــاء</div>
         <div class="starsSE">****</div>
 
@@ -125,7 +125,7 @@
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; نــحـــن رئـــيس كـــتابة الضبـــط بالمحـــكــمة الابتدائية بالجـــديــــدة.
         </div>
         <div class="para-18">
-            بناء على القرار الصادر بتاريخ: <b style="color:red;">{{ \Carbon\Carbon::parse($dossier->date_jugement)->format('d/m/Y') }}</b> &nbsp;&nbsp;الملف عدد: <b style="color:red;">{{ $dossier->numero_dossier }}</b> &nbsp;&nbsp;قضية ح ش.
+            بناء على القرار الصادر بتاريخ: <b >{{ \Carbon\Carbon::parse($dossier->date_jugement)->format('d/m/Y') }}</b> &nbsp;&nbsp;الملف عدد: <b >{{ $dossier->numero_dossier }}</b> &nbsp;&nbsp;قضية ح ش.
         </div>
         <div class="para-18">
             نطلب من المسمى : {{ $dossier->nom_assurance }} في شخص ممثلها القانوني
@@ -134,7 +134,7 @@
             الكائن مقرها الاجتماعي ب: {{ $dossier->adresse_assurance }}
         </div>
         <div class="para-18">
-            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b style="color:red;">{{ number_format($calcul->total,2) }}</b> درهما
+            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b >{{ number_format($calcul->total,2) }}</b> درهما
         </div>
 
         <div class="para-16">
@@ -142,7 +142,7 @@
         </div>
 
         <div class="signature">
-            <p>حرر بالجديدة بتاريخ: <b style="color:green;">{{ \Carbon\Carbon::parse($dossier->date_export)->format('d-m-Y') }}</b> </p>
+            <p>حرر بالجديدة بتاريخ: <b >{{ \Carbon\Carbon::parse($dossier->date_export)->format('d-m-Y') }}</b> </p>
             <p>الإمضــاء:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p style="margin-top: 8px;">عن رئيس كتابة الضبط&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p class="bold-text">رشيدة بليلة&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -161,7 +161,7 @@
                 <div>المحكمة الابتدائية بالجديدة</div>
                 <div><strong>وحدة التبليغ و التحصيل</strong></div>
                 <div class="stars-mini">&nbsp;&nbsp;&nbsp;&nbsp;****</div>
-                <div class="exec-num">أمر تنفيذي رقم : <b style="color:green;">{{ $calcul->numero_amr_tanfidhi }}</b> </div>
+                <div class="exec-num">أمر تنفيذي رقم : <b >{{ $calcul->numero_amr_tanfidhi }}</b> </div>
                 <div class="agent-sign">اسم وتوقيع عون التبليغ</div>
                 <p>........................</p>
             </div>

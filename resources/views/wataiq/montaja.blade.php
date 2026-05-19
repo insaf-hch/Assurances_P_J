@@ -64,7 +64,7 @@ body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); c
 .logo-sub  { font-size: 0.65rem; color: rgba(255,255,255,0.55); font-weight: 400; }
 .sidebar-nav { padding: 0.75rem 0; flex: 1; }
 .nav-label {
-    font-size: 0.6rem; font-weight: 700;
+    font-size: 1rem; font-weight: 800;
     color: rgba(255,255,255,0.38);
     letter-spacing: 0.13em;
     padding: 0.8rem 1.3rem 0.35rem;

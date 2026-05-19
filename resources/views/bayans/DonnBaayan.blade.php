@@ -12,16 +12,34 @@
     .col-montant { text-align: left; direction: ltr; }
     .empty-row td { color: #aaa; font-style: italic; }
     @media print {
-      body { padding: 5px; }
-      .no-print { display: none; }
-    }
+  body { padding: 5px; }
+  .no-print { display: none; }
+  
+  /* ✅ Orientation paysage */
+  @page {
+    size: A4 landscape;
+    margin: 10mm 8mm;
+  }
+
+  /* ✅ Réduire la taille pour tout faire tenir */
+  body { font-size: 10px; }
+  
+  table { 
+    width: 100%;
+    font-size: 9px;
+  }
+  
+  th, td { 
+    padding: 2px 4px;
+    white-space: nowrap;
+  }
+}
   </style>
 </head>
 <body>
 
 <div class="no-print" style="margin-bottom:12px;">
   <button onclick="window.print()" style="padding:6px 16px;font-size:13px;cursor:pointer;">🖨️ طباعة</button>
-  <a href="{{ route('wathaiq.index') }}" style="margin-right:10px;font-size:13px;">← العودة</a>
 </div>
 
 @php
