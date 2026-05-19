@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 // ✅ Page d'accueil — PREMIÈRE et UNIQUE route pour "/"
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
 Route::get('/accueil', function () {
     return view('accueil');
 })->name('accueil');
