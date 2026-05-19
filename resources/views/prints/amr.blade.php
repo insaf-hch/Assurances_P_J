@@ -100,13 +100,13 @@ html,body{
         zoom:1 !important;
         transform:none !important;
     }
-}
 
-        .header-block {
-            font-size:16px;
-            line-height: 1.3;
-            text-align: center;
-        }
+
+      .header-block {
+    font-size: 18px;
+    line-height: 1.3;
+    text-align: center;
+}
         .header-block .underline { text-decoration: underline; }
 
         .raqm-table {
@@ -128,12 +128,13 @@ html,body{
             white-space: nowrap;
         }
 
-        .left-info {
-            font-size: 16px;
-            line-height: 1.9;
-            text-align: right;
-            margin-top: 2px;
-        }
+      .left-info {
+    font-size: 18px;
+    line-height: 1.9;
+    text-align: right;
+    margin-top: 2px;
+}
+
 
         .doc-title {
             font-size: 26px;
@@ -142,11 +143,11 @@ html,body{
             margin-bottom: 6px;
             color: red;
         }
-        .doc-body {
-           font-size:17px;
-    line-height:1.8;
-            text-align: right;
-        }
+      .doc-body {
+    font-size: 20px;
+    line-height: 1.8;
+    text-align: right;
+}
         .doc-body p { margin-bottom: 3px; }
         .bold { font-weight: bold; }
         .underline { text-decoration: underline; }
