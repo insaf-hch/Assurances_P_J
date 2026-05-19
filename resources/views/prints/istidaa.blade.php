@@ -122,19 +122,19 @@
         <div class="starsSE">****</div>
 
         <div class="para-18">
-           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; نــحـــن رئـــيس كـــتابة الضبـــط بالمحـــكــمة الابتدائية بالجـــديــــدة.
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; نــحـــن رئـــيس كـــتابةالضبـــط بالمحـــكــمةالابتدائية بالجـــديــــدة.
         </div>
         <div class="para-18">
-            بناء على القرار الصادر بتاريخ: <b >{{ \Carbon\Carbon::parse($dossier->date_jugement)->format('d/m/Y') }}</b> &nbsp;&nbsp;الملف عدد: <b >{{ $dossier->numero_dossier }}</b> &nbsp;&nbsp;قضية ح ش.
+            بناء على القرار الصادر بتاريخ: <b >{{ \Carbon\Carbon::parse($dossier->date_jugement)->format('d/m/Y') }}</b> &nbsp;&nbsp;الملف عدد:<b >{{ $dossier->numero_dossier }}</b> &nbsp;&nbsp;قضيةح ش.
         </div>
         <div class="para-18">
-            نطلب من المسمى : {{ $dossier->nom_assurance }} في شخص ممثلها القانوني
+            نطلب من المسمى: {{ $dossier->nom_assurance }} في شخص ممثلهاالقانوني
         </div>
         <div class="para-18">
-            الكائن مقرها الاجتماعي ب: {{ $dossier->adresse_assurance }}
+            الكائن مقره الاجتماعي ب: {{ $dossier->adresse_assurance }}
         </div>
         <div class="para-18">
-            أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b >{{ number_format($calcul->total,2) }}</b> درهما
+     أداء مبلغ الرسوم و المصاريف القضائية المحكوم بها و قدره: <b >{{ number_format($calcul->total,2) }}</b> درهما
         </div>
 
         <div class="para-16">
@@ -144,6 +144,7 @@
         <div class="signature">
             <p>حرر بالجديدة بتاريخ: <b >{{ \Carbon\Carbon::parse($dossier->date_export)->format('d-m-Y') }}</b> </p>
             <p>الإمضــاء:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+            <br>
             <p style="margin-top: 8px;">عن رئيس كتابة الضبط&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p class="bold-text">رشيدة بليلة&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
             <p class="bold-text">منتدبة قضائية من الدرجة الاولى</p>
@@ -151,28 +152,35 @@
 
         <div class="separator"></div>
 
-        <div class="lower-section">
-            <div class="delivery-box">شهادة تسليم</div>
+       <div class="lower-section">
+    <div class="delivery-box">شهادة تسليم</div>
 
-            <div class="right-info">
-                <div>المملكة المغربية</div>
-                <div>وزارة العدل و الحريات</div>
-                <div>محكمة الاستئناف بالجديدة</div>
-                <div>المحكمة الابتدائية بالجديدة</div>
-                <div><strong>وحدة التبليغ و التحصيل</strong></div>
-                <div class="stars-mini">&nbsp;&nbsp;&nbsp;&nbsp;****</div>
-                <div class="exec-num">أمر تنفيذي رقم : <b >{{ $calcul->numero_amr_tanfidhi }}</b> </div>
-                <div class="agent-sign">اسم وتوقيع عون التبليغ</div>
-                <p>........................</p>
-            </div>
-
-            <div class="center-text">
-                <p>يشهد المسمى(ة) : <span class="line"></span></p>
-                <p>الموقع أسفله أنه توصل بالاستدعاء من أجل أداء الرسوم القضائية المحكوم</p>
-                <p>بها في الملف طره، و ذلك بتاريخ <span class="line short"></span></p>
-                <div class="receiver-sign">توقيع الحائز</div>
-            </div>
+    <!-- نقل المعلومات لأعلى مباشرة بعد السطر الفاصل -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px;">
+        
+        <!-- النص الأيسر -->
+        <div class="center-text" style="margin-right:0; flex:1;">
+            <p>يشهد المسمى(ة) : <span class="line"></span></p>
+            <p>الموقع أسفله أنه توصل بالاستدعاء من أجل أداء الرسوم القضائية المحكوم</p>
+            <p>بها في الملف طره، و ذلك بتاريخ <span class="line short"></span></p>
+            <div class="receiver-sign">توقيع الحائز</div>
         </div>
+
+        <!-- المعلومات اليمنى — مباشرة بعد الفاصل -->
+        <div class="right-info" style="position:static; width:240px; font-size:15px; line-height:1.6;">
+            <div>المملكة المغربية</div>
+            <div>وزارة العدل و الحريات</div>
+            <div>محكمة الاستئناف بالجديدة</div>
+            <div>المحكمة الابتدائية بالجديدة</div>
+            <div><strong>وحدة التبليغ و التحصيل</strong></div>
+            <div class="stars-mini">&nbsp;&nbsp;&nbsp;&nbsp;****</div>
+            <div class="exec-num">أمر تنفيذي رقم : <b>{{ $calcul->numero_amr_tanfidhi }}</b></div>
+            <div class="agent-sign">اسم وتوقيع عون التبليغ</div>
+            <p>........................</p>
+        </div>
+
+    </div>
+</div>
 
     </div>
 </div>
