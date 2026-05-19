@@ -207,7 +207,7 @@ html,body{
                 <div class="left-info">
                     <p>الرقم المطابق بسجل صوائر الرسوم القضائية التكميلية............</p>
                     <p>أمر تنفيذي رقم: <strong >{{ $calcul->numero_amr_tanfidhi ?? '—' }}</strong></p>
-                    <p>من داخل البيان رقم: <strong>{{ $dossier->bayan_id ?? '—' }}</strong></p>
+                    <p>من داخل البيان رقم: <strong>{{ ($dossier->bayan_id ?? 0) + 15 }}</strong></p>
                     <p>ملف رقم : <strong >{{ $dossier->numero_dossier ?? '—' }}</strong></p>
                     <p>حكم أو قرار رقم: </p>
                 </div>
