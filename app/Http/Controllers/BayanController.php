@@ -12,7 +12,7 @@ class BayanController extends Controller
         $bayan->load(['dossiers' => function ($q) {
             $q->with('calcul')->orderBy('id');
         }]);
-
+        $bayan->group_index = $bayan->group_index + 15;
         return view('bayans.show', compact('bayan'));
     }
 }

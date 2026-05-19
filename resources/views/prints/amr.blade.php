@@ -6,12 +6,14 @@
     <style>
         *{
    box-sizing:border-box;
+    font-weight: bold;
 }
-        body {
-            font-family: 'Traditional Arabic', 'Times New Roman', serif;
-            background: white;
-            direction: rtl;
-        }
+       body {
+    font-family: 'Traditional Arabic', 'Times New Roman', serif;
+    background: white;
+    direction: rtl;
+    font-weight: bold;
+}
         @page{
     size:A4;
     margin:0;
@@ -220,7 +222,7 @@ html,body{
     <tr>
         <td style="padding:2px 6px; text-align:right; vertical-align:middle;">الرسوم القضائية:</td>
         <td style="border:1.5px solid black; width:85px; text-align:center; font-weight:bold; padding:4px 5px;">
-            {{ number_format((float)($calcul->rasm_qadai ?? 0), 2) }}
+            {{ number_format(ceil((float)($calcul->rasm_qadai ?? 0)), 2) }}
         </td>
     </tr>
     <tr>
