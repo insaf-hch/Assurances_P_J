@@ -16,6 +16,7 @@ Route::get('/dashboard',
 [DossierController::class, 'index'])
 ->middleware('auth')
 ->name('dashboard');
+ 
 
 Route::post('/logout',
 [AuthController::class, 'logout'])
