@@ -302,7 +302,7 @@ tr:hover td { background: var(--sky-soft); }
                                         $percent = min(100, ($b->dossiers_count / 30) * 100);
                                     @endphp
                                     <tr>
-                                        <td><strong style="color:var(--brown);">{{ $b->group_index }}</strong></td>
+                                        <td><strong style="color:var(--brown);">{{ $b->group_index + 15 }}</strong></td>
 
                                         <td>
                                             <span style="background:var(--brown-soft);color:var(--brown);padding:0.18rem 0.6rem;border-radius:5px;font-size:0.75rem;font-weight:600;">
